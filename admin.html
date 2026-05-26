@@ -225,11 +225,12 @@ function handleDrop(e, tracking, i) {
   handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/")), tracking, i);
 }
 
-async function uploadToCloudinary(file) {
+async function uploadToCloudinary(file, tracking) {
   const fd = new FormData();
   fd.append("file", file);
   fd.append("upload_preset", UPLOAD_PRESET);
   fd.append("folder", "parcel-photos");
+  fd.append("tags", tracking);
   const res = await fetch("https://api.cloudinary.com/v1_1/"+CLOUD_NAME+"/image/upload", { method: "POST", body: fd });
   if (!res.ok) throw new Error("Upload failed");
   const data = await res.json();
@@ -250,7 +251,7 @@ async function handleFiles(files, tracking, i) {
 
   for (const file of files) {
     try {
-      const url = await uploadToCloudinary(file);
+      const url = await uploadToCloudinary(file, tracking);
       urls.push(url);
     } catch(e) {
       showToast("❌ อัพโหลดไม่สำเร็จ ลองใหม่อีกครั้งค่ะ");

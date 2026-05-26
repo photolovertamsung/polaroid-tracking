@@ -145,8 +145,20 @@ function mapRow(r) {
   return { tracking: r[k[0]]||"", name: r[k[1]]||"", phone: r[k[2]]||"", province: r[k[3]]||"", date: r[k[4]]||"", courier: r[k[5]]||"SPX", status: (r[k[6]]||"shipped").toLowerCase().trim() };
 }
 
-function getPhotos(tracking) {
-  try { return JSON.parse(localStorage.getItem("cld_"+tracking)||"[]"); } catch { return []; }
+const CLOUD_NAME = "dlr4a7zqr";
+const photoCache = {};
+
+async function getPhotos(tracking) {
+  if (photoCache[tracking] !== undefined) return photoCache[tracking];
+  try {
+    const tag = tracking.replace(/[^a-zA-Z0-9]/g, "_");
+    const res = await fetch("https://res.cloudinary.com/"+CLOUD_NAME+"/image/list/"+tag+".json");
+    if (!res.ok) { photoCache[tracking] = []; return []; }
+    const data = await res.json();
+    const urls = (data.resources||[]).map(r => "https://res.cloudinary.com/"+CLOUD_NAME+"/image/upload/"+r.public_id);
+    photoCache[tracking] = urls;
+    return urls;
+  } catch { photoCache[tracking] = []; return []; }
 }
 
 async function loadSheet() {
@@ -173,15 +185,16 @@ function setTab(m) {
   document.getElementById("searchInput").placeholder = m==="name" ? "พิมพ์ชื่อลูกค้า..." : "พิมพ์เบอร์โทร...";
 }
 
-function doSearch() {
+async function doSearch() {
   const q = document.getElementById("searchInput").value.trim().toLowerCase();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
   const found = DB.filter(r => (r[mode]||"").toLowerCase().includes(q));
   if (!found.length) { container.innerHTML = '<div class="empty-state">📦<br>ไม่พบข้อมูล<br><small>ลองตรวจสอบชื่อหรือเบอร์อีกครั้ง</small></div>'; return; }
-  container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + found.map(r => {
+  container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
+  const cards = await Promise.all(found.map(async r => {
     const st = (r.status in statusLabel) ? r.status : "shipped";
-    const photos = getPhotos(r.tracking);
+    const photos = await getPhotos(r.tracking);
     const imgHtml = photos.length ? photos.map(p => '<img class="product-img" src="'+p+'" alt="รูปสินค้า" loading="lazy">').join("") : "";
     return '<div class="result-card">'+
       '<div class="card-top"><div>'+
@@ -196,7 +209,8 @@ function doSearch() {
         '<button class="copy-btn" onclick="copyTracking(\''+r.tracking+'\',this)">คัดลอก</button>'+
       '</div>'+imgHtml+
     '</div>';
-  }).join("");
+  }));
+  container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + cards.join("");
 }
 
 function copyTracking(text, btn) {
