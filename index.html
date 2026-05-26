@@ -107,14 +107,15 @@
 
   <div class="search-card">
     <div class="tabs">
-      <button class="tab active" id="tabName" onclick="setTab('name')">👤 ค้นหาด้วยชื่อ</button>
+      <button class="tab active" id="tabCode" onclick="setTab('code')">🔢 รหัสออเดอร์</button>
+      <button class="tab" id="tabName" onclick="setTab('name')">👤 ชื่อ</button>
       <button class="tab" id="tabPhone" onclick="setTab('phone')">📞 เบอร์โทร</button>
     </div>
     <div class="input-row">
-      <input class="search-input" id="searchInput" placeholder="พิมพ์ชื่อ-นามสกุลให้ครบ..." oninput="doSearch()" autocomplete="off"/>
+      <input class="search-input" id="searchInput" placeholder="พิมพ์รหัสออเดอร์ 5 หลัก..." oninput="doSearch()" autocomplete="off"/>
       <button class="search-btn" onclick="doSearch()">ค้นหา</button>
     </div>
-    <p class="hint" id="hintText">พิมพ์ชื่อ-นามสกุลให้ครบ เช่น สมใจ รักดี</p>
+    <p class="hint" id="hintText">เช่น 00001, 00012</p>
   </div>
 
   <div id="results"></div>
@@ -128,7 +129,7 @@
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTvOZSL9sX3ezpv8wGlhHB4o50K6dPYPs5L_64JjQSbVPGtutC-YYixoMe_z7yJ8MY2rdmN64MEZTE/pub?output=csv";
 const statusLabel = { shipped: "จัดส่งแล้ว", transit: "อยู่ระหว่างขนส่ง", delivered: "ส่งถึงแล้ว" };
 const statusClass = { shipped: "badge-shipped", transit: "badge-transit", delivered: "badge-delivered" };
-let DB = [], mode = "name";
+let DB = [], mode = "code";
 
 function splitCSV(line) {
   const r = []; let c = "", q = false;
@@ -153,7 +154,7 @@ function parseCSV(text) {
 
 function mapRow(r) {
   const k = Object.keys(r);
-  return { tracking: r[k[0]]||"", name: r[k[1]]||"", phone: r[k[2]]||"", province: r[k[3]]||"", date: r[k[4]]||"", courier: r[k[5]]||"SPX", status: (r[k[6]]||"shipped").toLowerCase().trim() };
+  return { tracking: r[k[0]]||"", name: r[k[1]]||"", phone: r[k[2]]||"", province: r[k[3]]||"", date: r[k[4]]||"", courier: r[k[5]]||"SPX", status: "shipped", orderCode: r[k[6]]||"" };
 }
 
 const SUPABASE_URL = "https://zduqfsbohimmvoxiikxf.supabase.co";
@@ -195,26 +196,32 @@ async function loadSheet() {
 
 function setTab(m) {
   mode = m;
+  document.getElementById("tabCode").className = "tab"+(m==="code"?" active":"");
   document.getElementById("tabName").className = "tab"+(m==="name"?" active":"");
   document.getElementById("tabPhone").className = "tab"+(m==="phone"?" active":"");
   document.getElementById("searchInput").value = "";
   document.getElementById("results").innerHTML = "";
-  document.getElementById("hintText").textContent = m==="name" ? "พิมพ์ชื่อ-นามสกุลให้ครบ เช่น สมใจ รักดี" : "พิมพ์เบอร์โทรครบ 10 หลัก";
-  document.getElementById("searchInput").placeholder = m==="name" ? "พิมพ์ชื่อ-นามสกุลให้ครบ..." : "พิมพ์เบอร์โทร 10 หลัก...";
+  const hints = { code: "เช่น 00001, 00012", name: "พิมพ์ชื่อให้ครบ เช่น ชณัช วิสุวรรณ", phone: "เช่น 0968399775 หรือ 968399775" };
+  const placeholders = { code: "พิมพ์รหัสออเดอร์ 5 หลัก...", name: "พิมพ์ชื่อ-นามสกุล...", phone: "พิมพ์เบอร์โทร..." };
+  document.getElementById("hintText").textContent = hints[m];
+  document.getElementById("searchInput").placeholder = placeholders[m];
 }
 
 async function doSearch() {
   const q = document.getElementById("searchInput").value.trim().toLowerCase();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
-  // ต้องพิมพ์ชื่อเต็ม หรือเบอร์ครบ 10 หลัก
-  if (mode === "name" && q.length < 3) { container.innerHTML = '<div class="empty-state">📝<br>กรุณาพิมพ์ชื่อ-นามสกุลให้ครบ</div>'; return; }
-  if (mode === "phone" && q.replace(/\D/g,"").length < 10) { container.innerHTML = '<div class="empty-state">📱<br>กรุณาพิมพ์เบอร์โทรครบ 10 หลัก</div>'; return; }
-  const found = DB.filter(r => {
-    if (mode === "name") return (r.name||"").toLowerCase() === q;
-    return (r.phone||"").replace(/\D/g,"") === q.replace(/\D/g,"");
-  });
-  if (!found.length) { container.innerHTML = '<div class="empty-state">📦<br>ไม่พบข้อมูล<br><small>กรุณาตรวจสอบชื่อ-นามสกุล หรือเบอร์โทรอีกครั้ง</small></div>'; return; }
+  let found = [];
+  if (mode === "code") {
+    found = DB.filter(r => (r.orderCode||"").toLowerCase() === q);
+  } else if (mode === "name") {
+    found = DB.filter(r => (r.name||"").toLowerCase() === q);
+    if (!found.length) found = DB.filter(r => (r.name||"").toLowerCase().includes(q));
+  } else {
+    const qNum = q.replace(/\D/g,"").replace(/^0/,"");
+    found = DB.filter(r => (r.phone||"").replace(/\D/g,"").replace(/^0/,"") === qNum);
+  }
+  if (!found.length) { container.innerHTML = '<div class="empty-state">📦<br>ไม่พบข้อมูล<br><small>ลองตรวจสอบข้อมูลอีกครั้งค่ะ</small></div>'; return; }
   container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
   const cards = await Promise.all(found.map(async r => {
     const st = (r.status in statusLabel) ? r.status : "shipped";
