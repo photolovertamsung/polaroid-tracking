@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แยกออเดอร์ — Polaroid_tamsung</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E1F5EE;
+    --green-border: #9FE1CB;
+    --bg: #F2F2F7; --surface: #FFFFFF; --border: rgba(0,0,0,0.08);
+    --text: #000; --text-muted: #6B6B6B; --text-faint: #AEAEB2;
+    --radius: 16px; --radius-sm: 10px;
+  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  .logo { width: 36px; height: 36px; background: var(--green); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+  .logo svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .header-text h1 { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-text p { font-size: 12px; color: var(--text-muted); }
+  .back-link { margin-left: auto; font-size: 12px; color: var(--text-faint); text-decoration: none; padding: 6px 10px; border-radius: 8px; border: 0.5px solid var(--border); }
+  .main { max-width: 480px; margin: 0 auto; padding: 20px 16px 60px; }
+  .section-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .paste-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  textarea { width: 100%; min-height: 180px; padding: 11px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); resize: vertical; line-height: 1.7; outline: none; }
+  textarea:focus { border-color: var(--green); background: white; }
+  textarea::placeholder { color: var(--text-faint); }
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .btn-parse { flex: 1; padding: 12px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .btn-parse:hover { background: var(--green-dark); }
+  .btn-clear { padding: 12px 16px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); font-family: 'Sarabun', sans-serif; font-size: 15px; color: var(--text-muted); cursor: pointer; }
+
+  .preview-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: none; }
+  .preview-card.show { display: block; }
+  .preview-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .slip { background: white; border: 1.5px dashed #D1D1D6; border-radius: 12px; padding: 20px; max-width: 300px; margin: 0 auto; }
+  .slip-header { text-align: center; border-bottom: 1px dashed #D1D1D6; padding-bottom: 12px; margin-bottom: 12px; }
+  .slip-shop { font-size: 17px; font-weight: 700; }
+  .slip-sub { font-size: 12px; color: #888; margin-top: 2px; }
+  .slip-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; }
+  .slip-lbl { color: #888; }
+  .slip-val { font-weight: 600; text-align: right; }
+  .slip-divider { border: none; border-top: 1px dashed #E5E5EA; margin: 8px 0; }
+  .slip-items { font-size: 13px; margin: 8px 0; }
+  .slip-item { padding: 3px 0; line-height: 1.6; }
+  .slip-date { text-align: center; margin-top: 12px; background: #FEF3E2; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 600; color: #92600A; }
+  .slip-footer { text-align: center; font-size: 11px; color: #C7C7CC; margin-top: 14px; }
+
+  .print-btn { width: 100%; padding: 12px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .print-btn:hover { background: var(--green-dark); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="8" r="1" fill="white" stroke="none"/></svg>
+  </div>
+  <div class="header-text">
+    <h1>แยกออเดอร์</h1>
+    <p>วางสรุปออเดอร์ แล้วพิมพ์ใบรายการได้เลย</p>
+  </div>
+  <a href="admin.html" class="back-link">← หลังบ้าน</a>
+</header>
+
+<main class="main">
+  <p class="section-label">วางข้อมูลออเดอร์</p>
+  <div class="paste-card">
+    <textarea id="ta" placeholder="วางข้อความทั้งหมดได้เลยค่ะ ตั้งแต่ชื่อลูกค้า ที่อยู่ จนถึงสรุปออเดอร์..."></textarea>
+    <div class="btn-row">
+      <button class="btn-parse" onclick="parse()">✨ แยกข้อมูล</button>
+      <button class="btn-clear" onclick="clearAll()">ล้าง</button>
+    </div>
+  </div>
+
+  <div class="preview-card" id="preview">
+    <p class="preview-label">ตัวอย่างใบรายการ</p>
+    <div class="slip" id="slip">
+      <div class="slip-header">
+        <div class="slip-shop">Polaroid_tamsung</div>
+        <div class="slip-sub">ใบรายการสินค้า</div>
+      </div>
+      <div class="slip-row">
+        <span class="slip-lbl">ชื่อลูกค้า</span>
+        <span class="slip-val" id="sname">—</span>
+      </div>
+      <hr class="slip-divider">
+      <div class="slip-items" id="sitems"></div>
+      <hr class="slip-divider">
+      <div class="slip-date" id="sdate"></div>
+      <div class="slip-footer">ขอบคุณที่อุดหนุนนะคะ 🙏</div>
+    </div>
+    <button class="print-btn" onclick="printSlip()">🖨 พิมพ์ใบรายการ</button>
+  </div>
+</main>
+
+<script>
+function extractName(lines) {
+  for (let i = 0; i < Math.min(3, lines.length); i++) {
+    const l = lines[i].trim();
+    if (!l) continue;
+    if (/📸|🖼|💰|🚚|✅|📅|📋|💬|━|•/.test(l)) continue;
+    const m = l.match(/^([ก-๙a-zA-Z\s]+)/);
+    if (m && m[1].trim().length > 1) return m[1].trim();
+  }
+  return "";
+}
+
+function parse() {
+  const text = document.getElementById("ta").value.trim();
+  if (!text) return;
+  const lines = text.split("\n");
+  const name = extractName(lines);
+  const itemLines = lines.filter(l => l.trim().startsWith("•"));
+  const items = itemLines.map(l => l.replace(/^•\s*/, "").replace(/=\s*[\d,.]+\s*฿/, "").trim());
+  const dateMatch = text.match(/รอบจัดส่ง[^:]*:\s*([^\n]+)/);
+  const date = dateMatch ? dateMatch[1].trim() : "";
+
+  document.getElementById("sname").textContent = name || "—";
+  document.getElementById("sitems").innerHTML = items.length
+    ? items.map(it => '<div class="slip-item">• ' + it + '</div>').join("")
+    : '<div class="slip-item" style="color:#aaa">ไม่พบรายการ</div>';
+  document.getElementById("sdate").textContent = date ? "📅 รอบจัดส่ง: " + date : "ไม่พบรอบจัดส่ง";
+
+  document.getElementById("preview").classList.add("show");
+}
+
+function printSlip() {
+  const slipHTML = document.getElementById("slip").innerHTML;
+  const win = window.open("", "_blank");
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>ใบรายการ — Polaroid_tamsung</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Sarabun', sans-serif; background: white; display: flex; justify-content: center; padding: 24px; }
+      .slip { border: 1.5px dashed #ccc; border-radius: 10px; padding: 24px; width: 300px; color: #111; }
+      .slip-header { text-align: center; border-bottom: 1px dashed #ccc; padding-bottom: 12px; margin-bottom: 12px; }
+      .slip-shop { font-size: 18px; font-weight: 700; }
+      .slip-sub { font-size: 13px; color: #888; margin-top: 2px; }
+      .slip-row { display: flex; justify-content: space-between; font-size: 14px; padding: 5px 0; }
+      .slip-lbl { color: #888; }
+      .slip-val { font-weight: 600; }
+      .slip-divider { border: none; border-top: 1px dashed #ddd; margin: 8px 0; }
+      .slip-items { font-size: 13px; margin: 8px 0; }
+      .slip-item { padding: 3px 0; line-height: 1.6; }
+      .slip-date { text-align: center; margin-top: 12px; background: #FEF3E2; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-weight: 600; color: #92600A; }
+      .slip-footer { text-align: center; font-size: 11px; color: #bbb; margin-top: 14px; }
+      @media print { body { padding: 0; } }
+    </style>
+  </head><body><div class="slip">${slipHTML}</div></body></html>`);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 500);
+}
+
+function clearAll() {
+  document.getElementById("ta").value = "";
+  document.getElementById("preview").classList.remove("show");
+}
+</script>
+</body>
+</html>
