@@ -145,17 +145,24 @@ function mapRow(r) {
   return { tracking: r[k[0]]||"", name: r[k[1]]||"", phone: r[k[2]]||"", province: r[k[3]]||"", date: r[k[4]]||"", courier: r[k[5]]||"SPX", status: (r[k[6]]||"shipped").toLowerCase().trim() };
 }
 
-const CLOUD_NAME = "dlr4a7zqr";
+const SUPABASE_URL = "https://zduqfsbohimmvoxiikxf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_cH2ZhqrUXDmQ2Ur_s-db7A_c8pgCp6O";
+const BUCKET = "parcel-photos";
 const photoCache = {};
 
 async function getPhotos(tracking) {
   if (photoCache[tracking] !== undefined) return photoCache[tracking];
   try {
-    const tag = tracking.replace(/[^a-zA-Z0-9]/g, "_");
-    const res = await fetch("https://res.cloudinary.com/"+CLOUD_NAME+"/image/list/"+tag+".json");
+    const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
+      method: "POST",
+      headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer "+SUPABASE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ prefix: tracking+"/", limit: 20 })
+    });
     if (!res.ok) { photoCache[tracking] = []; return []; }
     const data = await res.json();
-    const urls = (data.resources||[]).map(r => "https://res.cloudinary.com/"+CLOUD_NAME+"/image/upload/"+r.public_id);
+    const urls = (data||[]).filter(f => f.name).map(f =>
+      SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+tracking+"/"+f.name
+    );
     photoCache[tracking] = urls;
     return urls;
   } catch { photoCache[tracking] = []; return []; }
