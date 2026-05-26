@@ -104,10 +104,10 @@
       <button class="tab" id="tabPhone" onclick="setTab('phone')">📞 เบอร์โทร</button>
     </div>
     <div class="input-row">
-      <input class="search-input" id="searchInput" placeholder="พิมพ์ชื่อลูกค้า..." oninput="doSearch()" autocomplete="off"/>
+      <input class="search-input" id="searchInput" placeholder="พิมพ์ชื่อ-นามสกุลให้ครบ..." oninput="doSearch()" autocomplete="off"/>
       <button class="search-btn" onclick="doSearch()">ค้นหา</button>
     </div>
-    <p class="hint" id="hintText">เช่น สมใจ, พสุนาถ (พิมพ์บางส่วนก็ได้)</p>
+    <p class="hint" id="hintText">พิมพ์ชื่อ-นามสกุลให้ครบ เช่น สมใจ รักดี</p>
   </div>
 
   <div id="results"></div>
@@ -192,21 +192,27 @@ function setTab(m) {
   document.getElementById("tabPhone").className = "tab"+(m==="phone"?" active":"");
   document.getElementById("searchInput").value = "";
   document.getElementById("results").innerHTML = "";
-  document.getElementById("hintText").textContent = m==="name" ? "เช่น สมใจ, พสุนาถ (พิมพ์บางส่วนก็ได้)" : "เช่น 081 หรือเบอร์เต็ม";
-  document.getElementById("searchInput").placeholder = m==="name" ? "พิมพ์ชื่อลูกค้า..." : "พิมพ์เบอร์โทร...";
+  document.getElementById("hintText").textContent = m==="name" ? "พิมพ์ชื่อ-นามสกุลให้ครบ เช่น สมใจ รักดี" : "พิมพ์เบอร์โทรครบ 10 หลัก";
+  document.getElementById("searchInput").placeholder = m==="name" ? "พิมพ์ชื่อ-นามสกุลให้ครบ..." : "พิมพ์เบอร์โทร 10 หลัก...";
 }
 
 async function doSearch() {
   const q = document.getElementById("searchInput").value.trim().toLowerCase();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
-  const found = DB.filter(r => (r[mode]||"").toLowerCase().includes(q));
-  if (!found.length) { container.innerHTML = '<div class="empty-state">📦<br>ไม่พบข้อมูล<br><small>ลองตรวจสอบชื่อหรือเบอร์อีกครั้ง</small></div>'; return; }
+  // ต้องพิมพ์ชื่อเต็ม หรือเบอร์ครบ 10 หลัก
+  if (mode === "name" && q.length < 3) { container.innerHTML = '<div class="empty-state">📝<br>กรุณาพิมพ์ชื่อ-นามสกุลให้ครบ</div>'; return; }
+  if (mode === "phone" && q.replace(/\D/g,"").length < 10) { container.innerHTML = '<div class="empty-state">📱<br>กรุณาพิมพ์เบอร์โทรครบ 10 หลัก</div>'; return; }
+  const found = DB.filter(r => {
+    if (mode === "name") return (r.name||"").toLowerCase() === q;
+    return (r.phone||"").replace(/\D/g,"") === q.replace(/\D/g,"");
+  });
+  if (!found.length) { container.innerHTML = '<div class="empty-state">📦<br>ไม่พบข้อมูล<br><small>กรุณาตรวจสอบชื่อ-นามสกุล หรือเบอร์โทรอีกครั้ง</small></div>'; return; }
   container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
   const cards = await Promise.all(found.map(async r => {
     const st = (r.status in statusLabel) ? r.status : "shipped";
     const photos = await getPhotos(r.tracking);
-    const imgHtml = photos.length ? photos.map(p => '<img class="product-img" src="'+p+'" alt="รูปสินค้า" loading="lazy" onclick="openLightbox(\"'+p+'\")" style="cursor:pointer">').join("") : "";
+    const imgHtml = photos.length ? photos.map(p => '<img class="product-img" src="'+p+'" alt="รูปสินค้า" loading="lazy" onclick="openLightbox(this.src)" style="cursor:pointer;cursor:zoom-in">').join("") : "";
     return '<div class="result-card">'+
       '<div class="card-top"><div>'+
         '<div class="card-name">'+r.name+'</div>'+
