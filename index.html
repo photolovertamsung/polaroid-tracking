@@ -9,48 +9,45 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E1F5EE;
-    --green-border: #9FE1CB; --green-text: #085041;
-    --amber-bg: #FAEEDA; --amber-text: #854F0B;
-    --delivered-bg: #EAF3DE; --delivered-text: #3B6D11;
-    --red-bg: #FCEBEB; --red-text: #A32D2D;
-    --bg: #F7F5F0; --surface: #FFFFFF; --border: rgba(0,0,0,0.1);
-    --text: #1a1a1a; --text-muted: #6b6b6b; --text-faint: #aaaaaa;
-    --radius: 12px; --radius-sm: 8px;
+    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E8F8F2;
+    --green-border: #B2E8D4; --green-text: #085041;
+    --amber-bg: #FEF3E2; --amber-text: #92600A;
+    --delivered-bg: #EDF7E1; --delivered-text: #3B6D11;
+    --bg: #F2F2F7; --surface: #FFFFFF; --border: rgba(0,0,0,0.08);
+    --text: #000000; --text-muted: #6B6B6B; --text-faint: #AEAEB2;
+    --radius: 16px; --radius-sm: 10px;
   }
-  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
-  .logo { width: 38px; height: 38px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .logo svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .header-text h1 { font-size: 15px; font-weight: 600; line-height: 1.2; }
+  body { font-family: -apple-system, 'SF Pro Display', 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); padding: 14px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  .logo { width: 36px; height: 36px; background: var(--green); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo svg { width: 18px; height: 18px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .header-text h1 { font-size: 16px; font-weight: 700; line-height: 1.2; letter-spacing: -0.3px; }
   .header-text p { font-size: 12px; color: var(--text-muted); }
-  .admin-link { margin-left: auto; font-size: 12px; color: var(--text-faint); text-decoration: none; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); }
-  .admin-link:hover { background: var(--bg); }
   .main { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
-  .delivery-card { background: var(--green-light); border: 1px solid var(--green-border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
+  .delivery-card { background: var(--green-light); border: 0.5px solid var(--green-border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
   .delivery-card h2 { font-size: 13px; font-weight: 600; color: var(--green-text); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
   .delivery-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--green-dark); margin-top: 4px; }
   .delivery-row span { font-weight: 600; }
-  .search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
-  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-  .tab { flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: transparent; font-family: 'Sarabun', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  .tab.active { background: var(--green); border-color: var(--green); color: white; }
+  .search-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; background: var(--bg); border-radius: 10px; padding: 3px; }
+  .tab { flex: 1; padding: 8px 12px; border-radius: 8px; border: none; background: transparent; font-family: -apple-system, 'Sarabun', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .tab.active { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
   .input-row { display: flex; gap: 8px; }
-  .search-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
-  .search-input:focus { border-color: var(--green); }
+  .search-input { flex: 1; padding: 11px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-sm); font-family: -apple-system, 'Sarabun', sans-serif; font-size: 15px; background: var(--bg); color: var(--text); outline: none; }
+  .search-input:focus { border-color: var(--green); background: white; }
   .search-input::placeholder { color: var(--text-faint); }
-  .search-btn { padding: 11px 18px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .search-btn { padding: 11px 18px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: -apple-system, 'Sarabun', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; }
   .search-btn:hover { background: var(--green-dark); }
   .hint { font-size: 12px; color: var(--text-faint); margin-top: 8px; }
   .sync-bar { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
   .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
   .sync-dot.ok { background: var(--green); }
-  .sync-dot.err { background: #E24B4A; }
+  .sync-dot.err { background: #FF3B30; }
   .result-count { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
-  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; animation: fadeIn 0.2s ease; }
+  .result-card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; animation: fadeIn 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-  .card-name { font-size: 15px; font-weight: 600; }
+  .card-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
   .card-phone { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
   .card-province { font-size: 12px; color: var(--text-faint); }
   .badge { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-left: 8px; }
@@ -58,24 +55,30 @@
   .badge-transit { background: var(--amber-bg); color: var(--amber-text); }
   .badge-delivered { background: var(--delivered-bg); color: var(--delivered-text); }
   .courier-row { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); background: var(--bg); padding: 4px 10px; border-radius: 20px; margin-bottom: 10px; }
-  .tracking-row { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .tracking-row { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 0.5px solid var(--border); }
   .tracking-label { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
-  .tracking-num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; flex: 1; word-break: break-all; }
-  .copy-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: transparent; font-family: 'Sarabun', sans-serif; font-size: 12px; cursor: pointer; color: var(--text-muted); flex-shrink: 0; }
-  .copy-btn.copied { background: var(--green-light); color: var(--green-dark); border-color: var(--green-border); }
-  .product-img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 220px; object-fit: cover; display: block; }
+  .tracking-num { font-family: 'SF Mono', 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; flex: 1; word-break: break-all; }
+  .copy-btn { padding: 5px 12px; border: 0.5px solid var(--border); border-radius: 6px; background: var(--bg); font-family: -apple-system, 'Sarabun', sans-serif; font-size: 12px; cursor: pointer; color: var(--green); font-weight: 600; flex-shrink: 0; }
+  .copy-btn.copied { background: var(--green-light); color: var(--green-dark); }
+  .product-img { width: 100%; border-radius: 12px; margin-top: 10px; max-height: 240px; object-fit: cover; display: block; }
   .no-img { display: none; }
   .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 99999; align-items: center; justify-content: center; padding: 20px; cursor: pointer; }
   .lightbox.show { display: flex; }
-  .lightbox-img { max-width: 100%; max-height: 88vh; border-radius: 8px; object-fit: contain; cursor: default; }
-  .lightbox-close { position: fixed; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.25); color: white; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lightbox-img { max-width: 100%; max-height: 88vh; border-radius: 12px; object-fit: contain; cursor: default; }
+  .lightbox-close { position: fixed; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); color: white; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 14px; }
-  .thank-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-top: 12px; text-align: center; }
+  .thank-box { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-top: 12px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   .thank-box p { font-size: 13px; color: var(--text-muted); line-height: 1.8; }
+  .secret-btn { margin-left: auto; width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; opacity: 0; }
+  .secret-menu { position: absolute; top: 56px; right: 16px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.12); overflow: hidden; display: none; z-index: 100; min-width: 180px; }
+  .secret-menu.show { display: block; }
+  .secret-item { display: block; padding: 14px 16px; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; border-bottom: 0.5px solid var(--border); }
+  .secret-item:last-child { border-bottom: none; }
+  .secret-item:hover { background: var(--bg); }
 </style>
 </head>
 <body>
-<header class="header">
+<header class="header" style="position:relative;">
   <div class="logo">
     <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="8" r="1" fill="white" stroke="none"/></svg>
   </div>
@@ -83,7 +86,11 @@
     <h1>Polaroid_tamsung</h1>
     <p>ตรวจสอบสถานะคิวงานผลิต</p>
   </div>
-  <a href="admin.html" class="admin-link">🔧 หลังบ้าน</a>
+  <button class="secret-btn" onclick="toggleMenu()" aria-label="menu"></button>
+  <div class="secret-menu" id="secretMenu">
+    <a href="admin.html" class="secret-item">📸 อัพรูปสินค้า</a>
+    <a href="parse-order.html" class="secret-item">✨ แยกออเดอร์</a>
+  </div>
 </header>
 
 <main class="main">
@@ -247,6 +254,16 @@ function closeLightbox() {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+function toggleMenu() {
+  const m = document.getElementById("secretMenu");
+  m.classList.toggle("show");
+}
+document.addEventListener("click", e => {
+  if (!e.target.closest(".secret-btn") && !e.target.closest(".secret-menu")) {
+    document.getElementById("secretMenu").classList.remove("show");
+  }
+});
 
 loadSheet();
 </script>
