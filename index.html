@@ -146,7 +146,7 @@ function mapRow(r) {
 }
 
 function getPhotos(tracking) {
-  try { return JSON.parse(localStorage.getItem("photo_"+tracking)||"[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem("cld_"+tracking)||"[]"); } catch { return []; }
 }
 
 async function loadSheet() {

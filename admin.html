@@ -22,48 +22,48 @@
   .header-text h1 { font-size: 15px; font-weight: 600; }
   .header-text p { font-size: 12px; color: var(--text-muted); }
   .back-link { margin-left: auto; font-size: 12px; color: var(--text-faint); text-decoration: none; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); }
-  .main { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
-  .section-title { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .main { max-width: 480px; margin: 0 auto; padding: 20px 16px 60px; }
+  .section-title { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
   .search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
   .input-row { display: flex; gap: 8px; }
   .search-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
   .search-input:focus { border-color: var(--green); }
   .search-input::placeholder { color: var(--text-faint); }
-  .search-btn { padding: 11px 18px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
+  .search-btn { padding: 11px 18px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; white-space: nowrap; }
   .hint { font-size: 12px; color: var(--text-faint); margin-top: 8px; }
   .sync-bar { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
-  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; }
   .sync-dot.ok { background: var(--green); }
+  .sync-dot.err { background: var(--red); }
+  .result-count { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
 
-  /* admin card */
   .admin-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
   .admin-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
   .card-name { font-size: 15px; font-weight: 600; }
   .card-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-  .tracking-chip { font-size: 12px; background: var(--bg); padding: 4px 10px; border-radius: 20px; font-family: monospace; color: var(--text-muted); }
+  .tracking-chip { font-size: 11px; background: var(--bg); padding: 4px 10px; border-radius: 20px; font-family: monospace; color: var(--text-muted); flex-shrink: 0; margin-left: 8px; word-break: break-all; text-align: right; max-width: 160px; }
 
-  /* photo section */
   .photo-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
   .photo-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
-  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; min-height: 0; }
   .photo-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); }
   .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .photo-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .photo-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; line-height: 1; }
 
-  /* upload btn */
-  .upload-area { border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.15s; }
-  .upload-area:hover { border-color: var(--green); background: var(--green-light); }
-  .upload-area.drag { border-color: var(--green); background: var(--green-light); }
-  .upload-area input { display: none; }
+  .upload-area { border: 2px dashed var(--border); border-radius: 8px; padding: 20px 16px; text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
+  .upload-area:hover, .upload-area.drag { border-color: var(--green); background: var(--green-light); }
+  .upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .upload-icon { font-size: 28px; margin-bottom: 6px; }
   .upload-text { font-size: 13px; color: var(--text-muted); }
   .upload-text span { color: var(--green); font-weight: 500; }
   .upload-hint { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
+  .uploading { font-size: 13px; color: var(--green); margin-top: 6px; display: none; }
 
   .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 14px; }
-  .result-count { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
   .toast.show { opacity: 1; }
+  .progress-bar { height: 3px; background: var(--green-light); border-radius: 2px; margin-top: 8px; display: none; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 2px; width: 0; transition: width 0.3s; }
 </style>
 </head>
 <body>
@@ -80,7 +80,6 @@
 </header>
 
 <main class="main">
-
   <div class="sync-bar">
     <div class="sync-dot" id="syncDot"></div>
     <span id="syncStatus">กำลังโหลดข้อมูล...</span>
@@ -101,6 +100,11 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ====== Cloudinary Config ======
+const CLOUD_NAME = "dlr4a7zqr";
+const UPLOAD_PRESET = "polaroid_upload";
+// ==============================
+
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTvOZSL9sX3ezpv8wGlhHB4o50K6dPYPs5L_64JjQSbVPGtutC-YYixoMe_z7yJ8MY2rdmN64MEZTE/pub?output=csv";
 let DB = [];
 
@@ -131,11 +135,11 @@ function mapRow(r) {
 }
 
 function getPhotos(tracking) {
-  try { return JSON.parse(localStorage.getItem("photo_"+tracking)||"[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem("cld_"+tracking)||"[]"); } catch { return []; }
 }
 
 function savePhotos(tracking, photos) {
-  localStorage.setItem("photo_"+tracking, JSON.stringify(photos));
+  localStorage.setItem("cld_"+tracking, JSON.stringify(photos));
 }
 
 async function loadSheet() {
@@ -147,7 +151,7 @@ async function loadSheet() {
     document.getElementById("syncStatus").textContent = "โหลดข้อมูลสำเร็จ ("+DB.length+" รายการ)";
     document.getElementById("syncDot").className = "sync-dot ok";
   } catch {
-    document.getElementById("syncStatus").textContent = "โหลดไม่สำเร็จ";
+    document.getElementById("syncStatus").textContent = "โหลดไม่สำเร็จ — ตรวจสอบการเชื่อมต่อ";
     document.getElementById("syncDot").className = "sync-dot err";
   }
 }
@@ -155,7 +159,7 @@ async function loadSheet() {
 function showToast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg; t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2000);
+  setTimeout(() => t.classList.remove("show"), 2500);
 }
 
 function doSearch() {
@@ -163,17 +167,19 @@ function doSearch() {
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
   const found = DB.filter(r => r.name.toLowerCase().includes(q) || r.phone.includes(q));
-  if (!found.length) { container.innerHTML = '<div class="empty-state">🔍<br>ไม่พบลูกค้า</div>'; return; }
-  container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + found.map((r,i) => buildCard(r, i)).join("");
-  found.forEach((r, i) => attachUpload(r.tracking, i));
+  if (!found.length) {
+    container.innerHTML = '<div class="empty-state">🔍<br>ไม่พบลูกค้า<br><small style="color:#aaa">ลองพิมพ์ชื่อหรือเบอร์อีกครั้ง</small></div>';
+    return;
+  }
+  container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + found.map((r,i) => buildCard(r,i)).join("");
+  found.forEach((r,i) => attachUpload(r.tracking, i));
 }
 
 function buildCard(r, i) {
   const photos = getPhotos(r.tracking);
-  const gridHtml = photos.length ? '<div class="photo-grid" id="grid_'+i+'">'+
-    photos.map((p, pi) => '<div class="photo-item"><img src="'+p+'" alt="รูปสินค้า"><button class="photo-del" onclick="deletePhoto(\''+r.tracking+'\','+pi+','+i+')">✕</button></div>').join("")+
-  '</div>' : '<div class="photo-grid" id="grid_'+i+'"></div>';
-
+  const gridHtml = '<div class="photo-grid" id="grid_'+i+'">'+
+    photos.map((p,pi) => photoItem(r.tracking, p, pi, i)).join("")+
+  '</div>';
   return '<div class="admin-card">'+
     '<div class="admin-card-top">'+
       '<div><div class="card-name">'+r.name+'</div>'+
@@ -181,47 +187,85 @@ function buildCard(r, i) {
       '<span class="tracking-chip">'+r.tracking+'</span>'+
     '</div>'+
     '<div class="photo-section">'+
-      '<div class="photo-label">📷 รูปสินค้าก่อนส่ง ('+photos.length+' รูป)</div>'+
+      '<div class="photo-label" id="label_'+i+'">📷 รูปสินค้าก่อนส่ง ('+photos.length+' รูป)</div>'+
       gridHtml+
-      '<label class="upload-area" id="uploadArea_'+i+'" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="handleDrop(event,\''+r.tracking+'\','+i+')">'+
+      '<label class="upload-area" id="uploadArea_'+i+'"'+
+        ' ondragover="event.preventDefault();this.classList.add(\'drag\')"'+
+        ' ondragleave="this.classList.remove(\'drag\')"'+
+        ' ondrop="handleDrop(event,\''+r.tracking+'\','+i+')"'+
+      '>'+
         '<input type="file" accept="image/*" multiple id="fileInput_'+i+'">'+
         '<div class="upload-icon">📸</div>'+
         '<div class="upload-text"><span>กดเพื่อเลือกรูป</span> หรือลากมาวาง</div>'+
-        '<div class="upload-hint">รองรับ JPG, PNG, HEIC</div>'+
+        '<div class="upload-hint">รองรับ JPG, PNG, HEIC • อัพหลายรูปพร้อมกันได้</div>'+
+        '<div class="uploading" id="uploading_'+i+'">⏳ กำลังอัพโหลด...</div>'+
+        '<div class="progress-bar" id="progress_'+i+'"><div class="progress-fill" id="fill_'+i+'"></div></div>'+
       '</label>'+
     '</div>'+
   '</div>';
 }
 
+function photoItem(tracking, url, pi, i) {
+  return '<div class="photo-item">'+
+    '<img src="'+url+'" alt="รูปสินค้า" loading="lazy">'+
+    '<button class="photo-del" onclick="deletePhoto(\''+tracking+'\','+pi+','+i+')">✕</button>'+
+  '</div>';
+}
+
 function attachUpload(tracking, i) {
   document.getElementById("fileInput_"+i).addEventListener("change", function() {
-    handleFiles(this.files, tracking, i);
+    handleFiles(Array.from(this.files), tracking, i);
+    this.value = "";
   });
 }
 
 function handleDrop(e, tracking, i) {
   e.preventDefault();
   document.getElementById("uploadArea_"+i).classList.remove("drag");
-  handleFiles(e.dataTransfer.files, tracking, i);
+  handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/")), tracking, i);
 }
 
-function handleFiles(files, tracking, i) {
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", UPLOAD_PRESET);
+  fd.append("folder", "parcel-photos");
+  const res = await fetch("https://api.cloudinary.com/v1_1/"+CLOUD_NAME+"/image/upload", { method: "POST", body: fd });
+  if (!res.ok) throw new Error("Upload failed");
+  const data = await res.json();
+  return data.secure_url;
+}
+
+async function handleFiles(files, tracking, i) {
+  if (!files.length) return;
+  const uploadEl = document.getElementById("uploading_"+i);
+  const progressEl = document.getElementById("progress_"+i);
+  const fillEl = document.getElementById("fill_"+i);
+  uploadEl.style.display = "block";
+  progressEl.style.display = "block";
+
   const photos = getPhotos(tracking);
-  let loaded = 0;
-  Array.from(files).forEach(file => {
-    if (!file.type.startsWith("image/")) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      photos.push(e.target.result);
-      loaded++;
-      if (loaded === files.length) {
-        savePhotos(tracking, photos);
-        refreshGrid(tracking, i);
-        showToast("✅ อัพรูปสำเร็จ "+files.length+" รูป");
-      }
-    };
-    reader.readAsDataURL(file);
-  });
+  let done = 0;
+  const urls = [];
+
+  for (const file of files) {
+    try {
+      const url = await uploadToCloudinary(file);
+      urls.push(url);
+    } catch(e) {
+      showToast("❌ อัพโหลดไม่สำเร็จ ลองใหม่อีกครั้งค่ะ");
+    }
+    done++;
+    fillEl.style.width = (done/files.length*100)+"%";
+  }
+
+  urls.forEach(u => photos.push(u));
+  savePhotos(tracking, photos);
+  uploadEl.style.display = "none";
+  progressEl.style.display = "none";
+  fillEl.style.width = "0";
+  refreshGrid(tracking, i);
+  if (urls.length) showToast("✅ อัพโหลดสำเร็จ "+urls.length+" รูป");
 }
 
 function deletePhoto(tracking, pi, i) {
@@ -234,10 +278,8 @@ function deletePhoto(tracking, pi, i) {
 
 function refreshGrid(tracking, i) {
   const photos = getPhotos(tracking);
-  const grid = document.getElementById("grid_"+i);
-  grid.innerHTML = photos.map((p, pi) => '<div class="photo-item"><img src="'+p+'" alt="รูปสินค้า"><button class="photo-del" onclick="deletePhoto(\''+tracking+'\','+pi+','+i+')">✕</button></div>').join("");
-  const label = grid.previousElementSibling;
-  if (label) label.textContent = "📷 รูปสินค้าก่อนส่ง ("+photos.length+" รูป)";
+  document.getElementById("grid_"+i).innerHTML = photos.map((p,pi) => photoItem(tracking, p, pi, i)).join("");
+  document.getElementById("label_"+i).textContent = "📷 รูปสินค้าก่อนส่ง ("+photos.length+" รูป)";
 }
 
 loadSheet();
