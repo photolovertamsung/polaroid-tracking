@@ -3,237 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ตรวจสอบเลขพัสดุ — Polaroid_tamsung</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>หลังบ้าน — Polaroid_tamsung</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --green: #1D9E75;
-    --green-dark: #0F6E56;
-    --green-light: #E1F5EE;
-    --green-border: #9FE1CB;
-    --green-text: #085041;
-    --amber-bg: #FAEEDA;
-    --amber-text: #854F0B;
-    --delivered-bg: #EAF3DE;
-    --delivered-text: #3B6D11;
-    --red-bg: #FCEBEB;
-    --red-text: #A32D2D;
-    --bg: #F7F5F0;
-    --surface: #FFFFFF;
-    --border: rgba(0,0,0,0.1);
-    --text: #1a1a1a;
-    --text-muted: #6b6b6b;
-    --text-faint: #aaaaaa;
-    --radius: 12px;
-    --radius-sm: 8px;
+    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E1F5EE;
+    --green-border: #9FE1CB; --green-text: #085041;
+    --bg: #F7F5F0; --surface: #FFFFFF; --border: rgba(0,0,0,0.1);
+    --text: #1a1a1a; --text-muted: #6b6b6b; --text-faint: #aaaaaa;
+    --radius: 12px; --radius-sm: 8px;
+    --red: #E24B4A; --red-light: #FCEBEB;
   }
-
-  body {
-    font-family: 'Sarabun', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  /* header */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .logo {
-    width: 38px; height: 38px;
-    background: var(--green);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  .logo { width: 38px; height: 38px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
   .logo svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  .header-text h1 { font-size: 15px; font-weight: 600; line-height: 1.2; }
+  .header-text h1 { font-size: 15px; font-weight: 600; }
   .header-text p { font-size: 12px; color: var(--text-muted); }
-
-  /* main */
+  .back-link { margin-left: auto; font-size: 12px; color: var(--text-faint); text-decoration: none; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); }
   .main { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
-
-  /* delivery info */
-  .delivery-card {
-    background: var(--green-light);
-    border: 1px solid var(--green-border);
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 16px;
-  }
-  .delivery-card h2 {
-    font-size: 13px; font-weight: 600;
-    color: var(--green-text);
-    margin-bottom: 8px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .delivery-rows { display: flex; flex-direction: column; gap: 4px; }
-  .delivery-row {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 13px; color: var(--green-dark);
-  }
-  .delivery-row span { font-weight: 600; }
-
-  /* search */
-  .search-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 12px;
-  }
-  .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-  .tab {
-    flex: 1; padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: transparent;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 13px; font-weight: 500;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .tab.active { background: var(--green); border-color: var(--green); color: white; }
-  .tab:not(.active):hover { background: var(--bg); }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .search-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
   .input-row { display: flex; gap: 8px; }
-  .search-input {
-    flex: 1; padding: 11px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 14px;
-    background: var(--bg);
-    color: var(--text);
-    outline: none;
-    transition: border-color 0.15s;
-  }
+  .search-input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; background: var(--bg); color: var(--text); outline: none; }
   .search-input:focus { border-color: var(--green); }
   .search-input::placeholder { color: var(--text-faint); }
-  .search-btn {
-    padding: 11px 18px;
-    background: var(--green); color: white;
-    border: none; border-radius: var(--radius-sm);
-    font-family: 'Sarabun', sans-serif;
-    font-size: 14px; font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-    white-space: nowrap;
-  }
-  .search-btn:hover { background: var(--green-dark); }
+  .search-btn { padding: 11px 18px; background: var(--green); color: white; border: none; border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; }
   .hint { font-size: 12px; color: var(--text-faint); margin-top: 8px; }
-
-  /* sync bar */
-  .sync-bar {
-    font-size: 12px; color: var(--text-faint);
-    display: flex; align-items: center; gap: 6px;
-    margin-bottom: 12px; padding: 0 2px;
-  }
-  .sync-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--text-faint); flex-shrink: 0;
-  }
+  .sync-bar { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); }
   .sync-dot.ok { background: var(--green); }
-  .sync-dot.err { background: #E24B4A; }
 
-  /* result count */
-  .result-count { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; padding: 0 2px; }
-
-  /* result card */
-  .result-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 10px;
-    animation: fadeIn 0.2s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+  /* admin card */
+  .admin-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+  .admin-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
   .card-name { font-size: 15px; font-weight: 600; }
-  .card-phone { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-  .card-province { font-size: 12px; color: var(--text-faint); }
-  .badge {
-    font-size: 11px; font-weight: 600; padding: 4px 10px;
-    border-radius: 20px; white-space: nowrap; flex-shrink: 0; margin-left: 8px;
-  }
-  .badge-shipped { background: var(--green-light); color: var(--green-dark); }
-  .badge-transit { background: var(--amber-bg); color: var(--amber-text); }
-  .badge-delivered { background: var(--delivered-bg); color: var(--delivered-text); }
-  .courier-row {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; color: var(--text-muted);
-    background: var(--bg); padding: 4px 10px;
-    border-radius: 20px; margin-bottom: 10px;
-  }
-  .tracking-row {
-    display: flex; align-items: center; gap: 8px;
-    padding-top: 10px; border-top: 1px solid var(--border);
-  }
-  .tracking-label { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
-  .tracking-num {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px; font-weight: 500;
-    letter-spacing: 0.5px; flex: 1;
-    word-break: break-all;
-  }
-  .copy-btn {
-    padding: 5px 12px;
-    border: 1px solid var(--border);
-    border-radius: 6px; background: transparent;
-    font-family: 'Sarabun', sans-serif;
-    font-size: 12px; cursor: pointer;
-    color: var(--text-muted);
-    flex-shrink: 0;
-    transition: all 0.15s;
-    display: flex; align-items: center; gap: 4px;
-  }
-  .copy-btn:hover { background: var(--bg); }
-  .copy-btn.copied { background: var(--green-light); color: var(--green-dark); border-color: var(--green-border); }
+  .card-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .tracking-chip { font-size: 12px; background: var(--bg); padding: 4px 10px; border-radius: 20px; font-family: monospace; color: var(--text-muted); }
 
-  /* empty / error */
-  .empty-state {
-    text-align: center; padding: 32px 16px;
-    color: var(--text-muted); font-size: 14px;
-  }
-  .empty-state .icon { font-size: 36px; margin-bottom: 8px; }
-  .error-box {
-    background: var(--red-bg); border: 1px solid #F7C1C1;
-    border-radius: var(--radius-sm);
-    padding: 12px 14px; font-size: 13px; color: var(--red-text);
-    margin-bottom: 12px;
-  }
+  /* photo section */
+  .photo-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .photo-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .photo-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--bg); border: 1px solid var(--border); }
+  .photo-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,0.6); color: white; border: none; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
 
-  /* thank you */
-  .thank-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px; margin-top: 12px;
-    text-align: center;
-  }
-  .thank-box p { font-size: 13px; color: var(--text-muted); line-height: 1.8; }
+  /* upload btn */
+  .upload-area { border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .upload-area:hover { border-color: var(--green); background: var(--green-light); }
+  .upload-area.drag { border-color: var(--green); background: var(--green-light); }
+  .upload-area input { display: none; }
+  .upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .upload-text { font-size: 13px; color: var(--text-muted); }
+  .upload-text span { color: var(--green); font-weight: 500; }
+  .upload-hint { font-size: 11px; color: var(--text-faint); margin-top: 4px; }
 
-  /* icon svg inline */
-  .icon-svg { width: 14px; height: 14px; display: inline-block; vertical-align: middle; flex-shrink: 0; }
-
-  @media (max-width: 400px) {
-    .main { padding: 16px 12px 40px; }
-    .tracking-num { font-size: 12px; }
-  }
+  .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 14px; }
+  .result-count { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
 </style>
 </head>
 <body>
@@ -243,177 +73,171 @@
     <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="8" r="1" fill="white" stroke="none"/></svg>
   </div>
   <div class="header-text">
-    <h1>Polaroid_tamsung</h1>
-    <p>ตรวจสอบเลขพัสดุของคุณ</p>
+    <h1>หลังบ้าน</h1>
+    <p>อัพรูปสินค้าก่อนส่ง</p>
   </div>
+  <a href="index.html" class="back-link">← หน้าหลัก</a>
 </header>
 
 <main class="main">
-
-  <div class="delivery-card">
-    <h2>
-      <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#085041" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      ระยะเวลาจัดส่งโดยประมาณ
-    </h2>
-    <div class="delivery-rows">
-      <div class="delivery-row">
-        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        กทม./ปริมณฑล &nbsp;<span>1–2 วัน</span>
-      </div>
-      <div class="delivery-row">
-        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="#0F6E56" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        ต่างจังหวัด &nbsp;<span>3–5 วัน</span>
-      </div>
-    </div>
-  </div>
 
   <div class="sync-bar">
     <div class="sync-dot" id="syncDot"></div>
     <span id="syncStatus">กำลังโหลดข้อมูล...</span>
   </div>
 
-  <div id="errorBox"></div>
-
+  <p class="section-title">ค้นหาลูกค้า</p>
   <div class="search-card">
-    <div class="tabs">
-      <button class="tab active" id="tabName" onclick="setTab('name')">
-        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        ค้นหาด้วยชื่อ
-      </button>
-      <button class="tab" id="tabPhone" onclick="setTab('phone')">
-        <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.36 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.11 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z"/></svg>
-        เบอร์โทร
-      </button>
-    </div>
     <div class="input-row">
-      <input class="search-input" id="searchInput" placeholder="พิมพ์ชื่อลูกค้า..." oninput="doSearch()" onkeydown="if(event.key==='Enter')doSearch()" autocomplete="off" />
+      <input class="search-input" id="searchInput" placeholder="พิมพ์ชื่อหรือเบอร์โทร..." oninput="doSearch()" autocomplete="off"/>
       <button class="search-btn" onclick="doSearch()">ค้นหา</button>
     </div>
-    <p class="hint" id="hintText">เช่น สมใจ, พสุนาถ (พิมพ์บางส่วนก็ได้)</p>
+    <p class="hint">พิมพ์บางส่วนก็ได้ค่ะ</p>
   </div>
 
   <div id="results"></div>
-
-  <div class="thank-box">
-    <p>ขอบพระคุณที่อุดหนุนกันน้าค้าบบ 🙏🙇<br>เมื่อได้รับพัสดุแล้ว รบกวนฉีดแอลกอฮอลก่อนเปิดน้า 🥺<br>เพื่อความปลอดภัยงับ</p>
-  </div>
-
 </main>
 
+<div class="toast" id="toast"></div>
+
 <script>
-// ====== ตั้งค่า URL ของ Google Sheets ======
 const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTvOZSL9sX3ezpv8wGlhHB4o50K6dPYPs5L_64JjQSbVPGtutC-YYixoMe_z7yJ8MY2rdmN64MEZTE/pub?output=csv";
-// ==========================================
-
-const statusLabel = { shipped: "จัดส่งแล้ว", transit: "อยู่ระหว่างขนส่ง", delivered: "ส่งถึงแล้ว" };
-const statusClass = { shipped: "badge-shipped", transit: "badge-transit", delivered: "badge-delivered" };
 let DB = [];
-let mode = "name";
 
-function splitCSVLine(line) {
-  const result = []; let cur = "", inQ = false;
+function splitCSV(line) {
+  const r = []; let c = "", q = false;
   for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur); cur = ""; }
-    else { cur += c; }
+    if (line[i] === '"') q = !q;
+    else if (line[i] === ',' && !q) { r.push(c); c = ""; }
+    else c += line[i];
   }
-  result.push(cur);
-  return result;
+  r.push(c); return r;
 }
 
 function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   if (lines.length < 2) return [];
-  const headers = splitCSVLine(lines[0]).map(h => h.trim());
-  return lines.slice(1).map(line => {
-    const vals = splitCSVLine(line);
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = (vals[i] || "").trim(); });
-    return obj;
+  const h = splitCSV(lines[0]).map(x => x.trim());
+  return lines.slice(1).map(l => {
+    const v = splitCSV(l), o = {};
+    h.forEach((k, i) => o[k] = (v[i]||"").trim());
+    return o;
   }).filter(r => Object.values(r).some(v => v));
 }
 
 function mapRow(r) {
   const k = Object.keys(r);
-  return {
-    tracking: r[k[0]] || "",
-    name:     r[k[1]] || "",
-    phone:    r[k[2]] || "",
-    province: r[k[3]] || "",
-    date:     r[k[4]] || "",
-    courier:  r[k[5]] || "SPX",
-    status:   (r[k[6]] || "shipped").toLowerCase().trim(),
-  };
+  return { tracking: r[k[0]]||"", name: r[k[1]]||"", phone: r[k[2]]||"", province: r[k[3]]||"", date: r[k[4]]||"", courier: r[k[5]]||"SPX" };
+}
+
+function getPhotos(tracking) {
+  try { return JSON.parse(localStorage.getItem("photo_"+tracking)||"[]"); } catch { return []; }
+}
+
+function savePhotos(tracking, photos) {
+  localStorage.setItem("photo_"+tracking, JSON.stringify(photos));
 }
 
 async function loadSheet() {
   try {
     const res = await fetch(CSV_URL);
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error();
     const text = await res.text();
-    const raw = parseCSV(text);
-    DB = raw.map(mapRow).filter(r => r.tracking || r.name);
-    document.getElementById("syncStatus").textContent = "ข้อมูลล่าสุดจาก Google Sheets (" + DB.length + " รายการ)";
+    DB = parseCSV(text).map(mapRow).filter(r => r.tracking||r.name);
+    document.getElementById("syncStatus").textContent = "โหลดข้อมูลสำเร็จ ("+DB.length+" รายการ)";
     document.getElementById("syncDot").className = "sync-dot ok";
-    document.getElementById("errorBox").innerHTML = "";
-  } catch(e) {
-    document.getElementById("syncStatus").textContent = "โหลดข้อมูลไม่สำเร็จ — " + e.message;
+  } catch {
+    document.getElementById("syncStatus").textContent = "โหลดไม่สำเร็จ";
     document.getElementById("syncDot").className = "sync-dot err";
-    document.getElementById("errorBox").innerHTML = '<div class="error-box">⚠️ ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่อีกครั้ง</div>';
   }
 }
 
-function setTab(m) {
-  mode = m;
-  document.getElementById("tabName").className = "tab" + (m === "name" ? " active" : "");
-  document.getElementById("tabPhone").className = "tab" + (m === "phone" ? " active" : "");
-  document.getElementById("searchInput").value = "";
-  document.getElementById("results").innerHTML = "";
-  const hints = { name: "เช่น สมใจ, พสุนาถ (พิมพ์บางส่วนก็ได้)", phone: "เช่น 081 หรือเบอร์เต็ม" };
-  const placeholders = { name: "พิมพ์ชื่อลูกค้า...", phone: "พิมพ์เบอร์โทร..." };
-  document.getElementById("hintText").textContent = hints[m];
-  document.getElementById("searchInput").placeholder = placeholders[m];
-  document.getElementById("searchInput").focus();
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
 }
 
 function doSearch() {
   const q = document.getElementById("searchInput").value.trim().toLowerCase();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
-  const field = mode === "name" ? "name" : "phone";
-  const found = DB.filter(r => (r[field] || "").toLowerCase().includes(q));
-  if (!found.length) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">📦</div><div>ไม่พบข้อมูล<br><small style="color:#aaa">ลองตรวจสอบชื่อหรือเบอร์อีกครั้ง</small></div></div>';
-    return;
-  }
-  container.innerHTML = '<p class="result-count">พบ ' + found.length + ' รายการ</p>' + found.map(r => {
-    const st = (r.status in statusLabel) ? r.status : "shipped";
-    return '<div class="result-card">' +
-      '<div class="card-top">' +
-        '<div>' +
-          '<div class="card-name">' + r.name + '</div>' +
-          '<div class="card-phone">' + r.phone + '</div>' +
-          (r.province ? '<div class="card-province">📍 ' + r.province + '</div>' : '') +
-        '</div>' +
-        '<span class="badge ' + statusClass[st] + '">' + statusLabel[st] + '</span>' +
-      '</div>' +
-      '<div class="courier-row">🚚 ' + r.courier + (r.date ? '&nbsp;·&nbsp;' + r.date : '') + '</div>' +
-      '<div class="tracking-row">' +
-        '<span class="tracking-label">เลขพัสดุ</span>' +
-        '<span class="tracking-num">' + r.tracking + '</span>' +
-        '<button class="copy-btn" onclick="copyTracking(\'' + r.tracking + '\', this)">คัดลอก</button>' +
-      '</div>' +
-    '</div>';
-  }).join("");
+  const found = DB.filter(r => r.name.toLowerCase().includes(q) || r.phone.includes(q));
+  if (!found.length) { container.innerHTML = '<div class="empty-state">🔍<br>ไม่พบลูกค้า</div>'; return; }
+  container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + found.map((r,i) => buildCard(r, i)).join("");
+  found.forEach((r, i) => attachUpload(r.tracking, i));
 }
 
-function copyTracking(text, btn) {
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = "✓ คัดลอกแล้ว";
-    btn.classList.add("copied");
-    setTimeout(() => { btn.textContent = "คัดลอก"; btn.classList.remove("copied"); }, 2000);
+function buildCard(r, i) {
+  const photos = getPhotos(r.tracking);
+  const gridHtml = photos.length ? '<div class="photo-grid" id="grid_'+i+'">'+
+    photos.map((p, pi) => '<div class="photo-item"><img src="'+p+'" alt="รูปสินค้า"><button class="photo-del" onclick="deletePhoto(\''+r.tracking+'\','+pi+','+i+')">✕</button></div>').join("")+
+  '</div>' : '<div class="photo-grid" id="grid_'+i+'"></div>';
+
+  return '<div class="admin-card">'+
+    '<div class="admin-card-top">'+
+      '<div><div class="card-name">'+r.name+'</div>'+
+      '<div class="card-sub">'+r.phone+(r.province?' · '+r.province:'')+'</div></div>'+
+      '<span class="tracking-chip">'+r.tracking+'</span>'+
+    '</div>'+
+    '<div class="photo-section">'+
+      '<div class="photo-label">📷 รูปสินค้าก่อนส่ง ('+photos.length+' รูป)</div>'+
+      gridHtml+
+      '<label class="upload-area" id="uploadArea_'+i+'" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="handleDrop(event,\''+r.tracking+'\','+i+')">'+
+        '<input type="file" accept="image/*" multiple id="fileInput_'+i+'">'+
+        '<div class="upload-icon">📸</div>'+
+        '<div class="upload-text"><span>กดเพื่อเลือกรูป</span> หรือลากมาวาง</div>'+
+        '<div class="upload-hint">รองรับ JPG, PNG, HEIC</div>'+
+      '</label>'+
+    '</div>'+
+  '</div>';
+}
+
+function attachUpload(tracking, i) {
+  document.getElementById("fileInput_"+i).addEventListener("change", function() {
+    handleFiles(this.files, tracking, i);
   });
+}
+
+function handleDrop(e, tracking, i) {
+  e.preventDefault();
+  document.getElementById("uploadArea_"+i).classList.remove("drag");
+  handleFiles(e.dataTransfer.files, tracking, i);
+}
+
+function handleFiles(files, tracking, i) {
+  const photos = getPhotos(tracking);
+  let loaded = 0;
+  Array.from(files).forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      photos.push(e.target.result);
+      loaded++;
+      if (loaded === files.length) {
+        savePhotos(tracking, photos);
+        refreshGrid(tracking, i);
+        showToast("✅ อัพรูปสำเร็จ "+files.length+" รูป");
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function deletePhoto(tracking, pi, i) {
+  const photos = getPhotos(tracking);
+  photos.splice(pi, 1);
+  savePhotos(tracking, photos);
+  refreshGrid(tracking, i);
+  showToast("🗑 ลบรูปแล้ว");
+}
+
+function refreshGrid(tracking, i) {
+  const photos = getPhotos(tracking);
+  const grid = document.getElementById("grid_"+i);
+  grid.innerHTML = photos.map((p, pi) => '<div class="photo-item"><img src="'+p+'" alt="รูปสินค้า"><button class="photo-del" onclick="deletePhoto(\''+tracking+'\','+pi+','+i+')">✕</button></div>').join("");
+  const label = grid.previousElementSibling;
+  if (label) label.textContent = "📷 รูปสินค้าก่อนส่ง ("+photos.length+" รูป)";
 }
 
 loadSheet();
