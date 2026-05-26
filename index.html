@@ -202,7 +202,7 @@ async function doSearch() {
   const cards = await Promise.all(found.map(async r => {
     const st = (r.status in statusLabel) ? r.status : "shipped";
     const photos = await getPhotos(r.tracking);
-    const imgHtml = photos.length ? photos.map(p => '<img class="product-img" src="'+p+'" alt="รูปสินค้า" loading="lazy">').join("") : "";
+    const imgHtml = photos.length ? photos.map(p => '<img class="product-img" src="'+p+'" alt="รูปสินค้า" loading="lazy" onclick="openLightbox(\"'+p+'\")" style="cursor:pointer">').join("") : "";
     return '<div class="result-card">'+
       '<div class="card-top"><div>'+
         '<div class="card-name">'+r.name+'</div>'+
@@ -214,7 +214,7 @@ async function doSearch() {
         '<span class="tracking-label">เลขพัสดุ</span>'+
         '<span class="tracking-num">'+r.tracking+'</span>'+
         '<button class="copy-btn" onclick="copyTracking(\''+r.tracking+'\',this)">คัดลอก</button>'+
-      '</div>'+imgHtml+
+      '</div>'+imgHtml+(imgHtml ? '<p style="font-size:11px;color:#E24B4A;margin-top:6px;text-align:center;font-weight:500">📌 รูปสินค้ามีอายุ 7 วันหลังจัดส่ง</p>' : '')+
     '</div>';
   }));
   container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + cards.join("");
@@ -227,7 +227,22 @@ function copyTracking(text, btn) {
   });
 }
 
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
 loadSheet();
 </script>
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="รูปสินค้า">
+</div>
 </body>
 </html>
