@@ -71,16 +71,6 @@
 <main class="main">
   <p class="section-label">ข้อมูลออเดอร์</p>
   <div class="paste-card">
-    <div class="field-row">
-      <div class="field-group">
-        <span class="field-label">วัน-เวลาที่โอนเงิน</span>
-        <input type="datetime-local" id="payTime">
-      </div>
-      <div class="field-group">
-        <span class="field-label">รอบจัดส่ง</span>
-        <input type="text" id="shipDate" placeholder="เช่น 28/05/2026">
-      </div>
-    </div>
     <textarea id="ta" placeholder="วางข้อความออเดอร์ได้เลยค่ะ ตั้งแต่ชื่อลูกค้า จนถึงสรุปออเดอร์..."></textarea>
     <div class="btn-row">
       <button class="btn-add" onclick="addToQueue()">+ เพิ่มเข้าคิว</button>
@@ -92,7 +82,6 @@
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
       <p class="section-label" style="margin:0">คิวออเดอร์ (<span id="queueCount">0</span> ใบ)</p>
     </div>
-    <p class="sort-note">⏰ เรียงตามวันโอนเงิน เก่าสุดขึ้นก่อน</p>
     <div class="queue-list" id="queueList"></div>
     <button class="download-btn" onclick="downloadAll()">🖨 พิมพ์/บันทึก PDF ทั้งหมด</button>
   </div>
@@ -122,8 +111,51 @@ function extractName(lines) {
 function parseText(text) {
   const lines = text.split("\n");
   const name = extractName(lines);
-  const itemLines = lines.filter(l => l.trim().startsWith("•"));
-  const items = itemLines.map(l => l.replace(/^•\s*/, "").replace(/=\s*[\d,.]+\s*฿/, "").trim());
+
+  // รองรับหลายรูปแบบ: • รายการ, แผ่นที่ X, - รายการ, รายการตรงๆ ที่มีคำว่า "บาท"
+  const items = [];
+  let currentGroup = "";
+
+  lines.forEach(l => {
+    const t = l.trim();
+    if (!t) return;
+
+    // หัวกลุ่มสินค้า (ไม่มีราคา ไม่ใช่ emoji header)
+    if (!/📸|🖼|💰|🚚|✅|📅|📋|💬|━|•/.test(t) &&
+        !/แผ่นที่|จำนวน|—|=/.test(t) &&
+        !/^\d/.test(t) &&
+        t.length > 3 &&
+        !/^(ชื่อ|ที่อยู่|เบอร์|โทร|ลูกค้า)/.test(t) &&
+        !extractName([t]).includes(t.slice(0,5))) {
+      // อาจเป็นชื่อกลุ่มสินค้า
+      if (/sticker|รูป|ฟิล์ม|อัลบั้ม|พิมพ์|สติ๊กเกอร์|ไดคัท/i.test(t)) {
+        currentGroup = t;
+        return;
+      }
+    }
+
+    // รายการแบบ • xxx
+    if (t.startsWith("•")) {
+      const item = t.replace(/^•\s*/, "").replace(/=\s*[\d,.]+\s*฿/, "").trim();
+      if (item) items.push(currentGroup ? item : item);
+      return;
+    }
+
+    // รายการแบบ แผ่นที่ X จำนวน X แผ่น — XX บาท
+    if (/แผ่นที่\s*\d+/.test(t)) {
+      const priceMatch = t.match(/[—\-–]\s*([\d,]+)\s*บาท/);
+      const price = priceMatch ? priceMatch[1] + " บาท" : "";
+      const label = t.replace(/[—\-–]\s*[\d,]+\s*บาท/, "").trim();
+      items.push((currentGroup ? currentGroup + " · " : "") + label + (price ? " — " + price : ""));
+      return;
+    }
+
+    // รายการแบบ - xxx หรือ * xxx
+    if (/^[-*]\s/.test(t)) {
+      items.push(t.replace(/^[-*]\s*/, "").trim());
+    }
+  });
+
   return { name, items };
 }
 
@@ -136,13 +168,9 @@ function formatPayTime(dt) {
 
 function addToQueue() {
   const text = document.getElementById("ta").value.trim();
-  const payTime = document.getElementById("payTime").value;
-  const shipDate = document.getElementById("shipDate").value.trim();
   if (!text) { showToast("กรุณาวางข้อมูลออเดอร์ก่อนค่ะ"); return; }
-  if (!payTime) { showToast("กรุณาใส่วัน-เวลาที่โอนเงินด้วยนะคะ"); return; }
   const parsed = parseText(text);
-  queue.push({ ...parsed, payTime, shipDate, payTimestamp: new Date(payTime).getTime() });
-  queue.sort((a, b) => a.payTimestamp - b.payTimestamp);
+  queue.push({ ...parsed });
   clearForm();
   renderQueue();
   showToast("✅ เพิ่มเข้าคิวแล้ว (" + queue.length + " ใบ)");
@@ -150,8 +178,6 @@ function addToQueue() {
 
 function clearForm() {
   document.getElementById("ta").value = "";
-  document.getElementById("payTime").value = "";
-  document.getElementById("shipDate").value = "";
 }
 
 function removeFromQueue(i) {
@@ -171,10 +197,7 @@ function renderQueue() {
       <div class="queue-num">${i+1}</div>
       <div class="queue-info">
         <div class="queue-name">${o.name}</div>
-        <div class="queue-meta">
-          <span class="queue-chip">⏰ ${formatPayTime(o.payTime)}</span>
-          ${o.shipDate ? '<span class="queue-chip">📅 ' + o.shipDate + '</span>' : ''}
-        </div>
+        <div class="queue-meta"></div>
         <div class="queue-items-text">${o.items.slice(0,2).join(", ")}${o.items.length > 2 ? " ..." : ""}</div>
       </div>
       <button class="queue-del" onclick="removeFromQueue(${i})">✕</button>
@@ -194,20 +217,18 @@ function buildSlipHTML(order, num) {
           <span style="font-size:12px;color:#888;">ชื่อลูกค้า</span>
           <span style="font-size:17px;font-weight:700;">${order.name}</span>
         </div>
-        <div style="font-size:11px;color:#aaa;margin-bottom:6px;">โอนเงิน: ${formatPayTime(order.payTime)}</div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:6px;">Polaroid_tamsung</div>
         <div style="border-top:1.5px dashed #ccc;padding-top:6px;flex:1;">
           <div style="font-size:11px;color:#888;margin-bottom:4px;">รายการสินค้า</div>
           ${order.items.length
-            ? order.items.map(it => `<div style="font-size:14px;font-weight:700;padding:2px 0;line-height:1.5;">• ${it}</div>`).join("")
+            ? order.items.map(it => '<div style="font-size:13px;font-weight:700;padding:2px 0;line-height:1.5;">• ' + it + '</div>').join("")
             : '<div style="font-size:13px;color:#ccc;">ไม่พบรายการ</div>'
           }
         </div>
       </div>
-      ${order.shipDate ? `
-        <div style="background:#000;padding:9px 12px;text-align:center;flex-shrink:0;">
-          <span style="color:#fff;font-size:16px;font-weight:700;">📅 รอบจัดส่ง: ${order.shipDate}</span>
-        </div>
-      ` : '<div style="height:8px;"></div>'}
+      <div style="background:#000;padding:8px 12px;text-align:center;flex-shrink:0;">
+        <span style="color:#fff;font-size:13px;font-weight:700;">ขอบคุณที่อุดหนุนค่ะ 🙏</span>
+      </div>
     </div>
   `;
 }
