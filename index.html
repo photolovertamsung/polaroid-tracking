@@ -216,6 +216,7 @@ const STEPS = [
   { emoji:"✅", label:"ผลิตเสร็จแล้ว", time:"1 วัน", desc:"งานเสร็จเรียบร้อย รอเตรียมแพ็กค่ะ" },
   { emoji:"📦", label:"แพ็กของแล้ว", time:"1 วัน", desc:"กำลังเตรียมจัดส่งให้ค่ะ" },
   { emoji:"🚚", label:"จัดส่งแล้ว", desc:"ส่งพัสดุเรียบร้อย ติดตามเลขแทรกกิ้งได้เลย ✨" },
+  { emoji:"🕐", label:"รอขนส่งเข้ารับ", desc:"พัสดุรอขนส่งเข้ารับค่ะ — ไม่ทันรอบรถวันนี้ เลขพัสดุจะอัปเดตในระบบวันพรุ่งนี้น้า 🙏" },
 ];
 
 let DB = [];
@@ -298,7 +299,7 @@ function doSearch() {
 }
 
 async function showResult(o) {
-  const s = Math.min(Math.max(o.step,1),8);
+  const s = Math.min(Math.max(o.step,1),9);
   const cur = STEPS[s-1];
 
   document.getElementById("rName").textContent = o.name;
@@ -318,7 +319,7 @@ async function showResult(o) {
   // badge
   const badge = document.getElementById("rBadge");
   badge.textContent = cur.emoji+" "+cur.label;
-  badge.className = "track-badge"+(s===8?" done":"");
+  badge.className = "track-badge"+((s===8||s===9)?" done":"");
 
   // steps
   let html = "";
@@ -341,7 +342,7 @@ async function showResult(o) {
   else delayBox.style.display="none";
 
   const trackBox = document.getElementById("rTracking");
-  if (s===8 && o.tracking) {
+  if ((s===8 || s===9) && o.tracking) {
     trackBox.style.display="block";
     document.getElementById("rTrackNum").textContent=o.tracking;
     document.getElementById("rCourierLabel").textContent = (o.courier ? o.courier+" · " : "") + "เลขพัสดุ";

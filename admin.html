@@ -60,6 +60,12 @@
   .empty-state { text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 14px; }
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
   .toast.show { opacity: 1; }
+  .autodel-card { background: #FFF5F5; border: 1px solid rgba(226,75,74,0.2); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .autodel-info { flex: 1; }
+  .autodel-title { font-size: 13px; font-weight: 600; color: var(--red); margin-bottom: 2px; }
+  .autodel-sub { font-size: 12px; color: var(--text-muted); }
+  .autodel-btn { padding: 10px 16px; background: var(--red); color: white; border: none; border-radius: var(--radius-sm); font-family: "Sarabun", sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+  .autodel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -79,6 +85,13 @@
   <div class="sync-bar">
     <div class="sync-dot" id="syncDot"></div>
     <span id="syncStatus">กำลังโหลดข้อมูล...</span>
+  </div>
+  <div class="autodel-card">
+    <div class="autodel-info">
+      <div class="autodel-title">🗑 ลบรูปเก่าเกิน 7 วัน</div>
+      <div class="autodel-sub" id="autodelSub">ลบรูปทั้งหมดที่อัพโหลดเกิน 7 วันแล้วออกจาก Supabase</div>
+    </div>
+    <button class="autodel-btn" id="autodelBtn" onclick="autoDeleteOld()">ลบเลย</button>
   </div>
   <p class="section-title">ค้นหาลูกค้า</p>
   <div class="search-card">
@@ -164,6 +177,72 @@ async function deletePhoto(tracking, filename, i) {
   });
   await refreshGrid(tracking, i);
   showToast("🗑 ลบรูปแล้ว");
+}
+
+async function getPhotosWithMeta(tracking) {
+  try {
+    const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
+      method: "POST",
+      headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
+      body: JSON.stringify({ prefix: tracking+"/", limit: 100 })
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data||[]).filter(f => f.name && f.created_at).map(f => ({
+      path: tracking+"/"+f.name,
+      created_at: new Date(f.created_at)
+    }));
+  } catch { return []; }
+}
+
+async function autoDeleteOld() {
+  const btn = document.getElementById("autodelBtn");
+  const sub = document.getElementById("autodelSub");
+  const confirmed = confirm("ยืนยันลบรูปที่อัพโหลดเกิน 7 วันทั้งหมดออกจาก Supabase ใช่ไหมคะ?");
+  if (!confirmed) return;
+
+  btn.disabled = true;
+  btn.textContent = "กำลังสแกน...";
+  sub.textContent = "กำลังตรวจสอบไฟล์ทั้งหมด...";
+
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const allTrackings = DB.map(r => r.tracking).filter(Boolean);
+  let toDelete = [];
+
+  for (const tracking of allTrackings) {
+    const files = await getPhotosWithMeta(tracking);
+    const old = files.filter(f => f.created_at < cutoff);
+    toDelete = toDelete.concat(old.map(f => f.path));
+  }
+
+  if (toDelete.length === 0) {
+    sub.textContent = "ไม่มีรูปที่เก่าเกิน 7 วันค่ะ ✨";
+    btn.disabled = false;
+    btn.textContent = "ลบเลย";
+    showToast("✨ ไม่มีรูปที่ต้องลบค่ะ");
+    return;
+  }
+
+  sub.textContent = "กำลังลบ "+toDelete.length+" ไฟล์...";
+
+  // Delete in batches of 20
+  const BATCH = 20;
+  let deleted = 0;
+  for (let i = 0; i < toDelete.length; i += BATCH) {
+    const batch = toDelete.slice(i, i + BATCH);
+    await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET, {
+      method: "DELETE",
+      headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
+      body: JSON.stringify({ prefixes: batch })
+    });
+    deleted += batch.length;
+    sub.textContent = "ลบแล้ว "+deleted+"/"+toDelete.length+" ไฟล์...";
+  }
+
+  btn.disabled = false;
+  btn.textContent = "ลบเลย";
+  sub.textContent = "ลบรูปทั้งหมดที่อัพโหลดเกิน 7 วันแล้วออกจาก Supabase";
+  showToast("🗑 ลบรูปเก่าแล้ว "+deleted+" ไฟล์");
 }
 
 async function loadSheet() {
