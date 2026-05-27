@@ -95,7 +95,7 @@
   .step-desc { background: var(--fill); border-radius: var(--rsm); padding: 10px 12px; margin-top: 12px; font-size: 13px; color: var(--label2); line-height: 1.6; }
   .step-warn { background: rgba(255,149,0,0.1); border-radius: var(--rsm); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #B25000; display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
   .delay-box { background: rgba(255,59,48,0.07); border: 0.5px solid rgba(255,59,48,0.25); border-radius: var(--rsm); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: var(--red); display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
-  .tracking-box { background: var(--fill); border-radius: var(--rsm); padding: 10px 14px; margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .tracking-box { background: var(--fill); border-radius: var(--rsm); padding: 12px 14px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
   .tracking-num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--label); flex: 1; word-break: break-all; }
   .copy-btn { padding: 5px 12px; border: none; border-radius: 6px; background: var(--label); color: white; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
 
@@ -172,9 +172,14 @@
       <span id="rDelayText"></span>
     </div>
     <div class="tracking-box" id="rTracking" style="display:none;">
-      <span style="font-size:12px;color:var(--label3);flex-shrink:0;">เลขพัสดุ</span>
-      <span class="tracking-num" id="rTrackNum"></span>
-      <button class="copy-btn" onclick="copyTrack()">คัดลอก</button>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-size:12px;color:var(--label3);flex-shrink:0;">เลขพัสดุ</span>
+        <span class="tracking-num" id="rTrackNum"></span>
+        <button class="copy-btn" onclick="copyTrack()">คัดลอก</button>
+      </div>
+      <a id="rTrackLink" href="#" target="_blank" style="display:none;align-items:center;justify-content:center;gap:6px;background:var(--label);color:white;padding:10px;border-radius:var(--rsm);font-size:14px;font-weight:600;text-decoration:none;width:100%;">
+        🔍 ติดตามพัสดุ
+      </a>
     </div>
     <div id="rPhotos"></div>
   </div>
@@ -231,18 +236,33 @@ function parseCSV(text) {
 
 function mapRow(r) {
   const k = Object.keys(r);
+  const stepRaw = (r[k[7]]||"").trim();
+  let step = parseInt(stepRaw);
+  if (isNaN(step)) {
+    const s = stepRaw.toLowerCase();
+    if (s.includes("โอนเงิน")) step = 1;
+    else if (s.includes("รอคิว")) step = 2;
+    else if (s.includes("ถึงคิว")) step = 3;
+    else if (s.includes("โหลดไฟล์")) step = 4;
+    else if (s.includes("กำลังผลิต")) step = 5;
+    else if (s.includes("ผลิตเสร็จ")) step = 6;
+    else if (s.includes("แพ็ก")) step = 7;
+    else if (s.includes("จัดส่ง")) step = 8;
+    else step = 1;
+  }
   return {
-    tracking:  r[k[0]]||"",
-    name:      r[k[1]]||"",
-    phone:     r[k[2]]||"",
-    province:  r[k[3]]||"",
-    date:      r[k[4]]||"",
-    courier:   r[k[5]]||"SPX",
-    orderCode: r[k[6]]||"",
-    step:      parseInt(r[k[7]])||1,
-    note:      r[k[8]]||"",
-    items:     r[k[9]]||"",
-    address:   r[k[10]]||"",
+    tracking:     r[k[0]]||"",
+    name:         r[k[1]]||"",
+    phone:        r[k[2]]||"",
+    province:     r[k[3]]||"",
+    date:         r[k[4]]||"",
+    courier:      r[k[5]]||"SPX",
+    orderCode:    r[k[6]]||"",
+    step:         step,
+    note:         r[k[8]]||"",
+    items:        r[k[9]]||"",
+    trackingLink: r[k[10]]||"",
+    address:      r[k[11]]||"",
   };
 }
 
@@ -315,8 +335,19 @@ async function showResult(o) {
   else delayBox.style.display="none";
 
   const trackBox = document.getElementById("rTracking");
-  if (s===8 && o.tracking) { trackBox.style.display="flex"; document.getElementById("rTrackNum").textContent=o.tracking; }
-  else trackBox.style.display="none";
+  if (s===8 && o.tracking) {
+    trackBox.style.display="block";
+    document.getElementById("rTrackNum").textContent=o.tracking;
+    const linkEl = document.getElementById("rTrackLink");
+    if (o.trackingLink) {
+      linkEl.href = o.trackingLink;
+      linkEl.style.display = "flex";
+    } else {
+      linkEl.style.display = "none";
+    }
+  } else {
+    trackBox.style.display="none";
+  }
 
   const photos = await getPhotos(o.tracking);
   const photoDiv = document.getElementById("rPhotos");
