@@ -135,8 +135,9 @@ async function getPhotos(tracking) {
     });
     if (!res.ok) return [];
     const data = await res.json();
+    const ts = Date.now();
     return (data||[]).filter(f => f.name).map(f =>
-      SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+tracking+"/"+f.name
+      SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+tracking+"/"+f.name+"?t="+ts
     );
   } catch { return []; }
 }
@@ -147,7 +148,7 @@ async function uploadPhoto(file, tracking) {
   const path = tracking+"/"+filename;
   const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
     method: "POST",
-    headers: { ...(await sbHeaders()), "Content-Type": file.type||"image/jpeg" },
+    headers: { ...(await sbHeaders()), "Content-Type": file.type||"image/jpeg", "x-upsert": "true" },
     body: file
   });
   if (!res.ok) throw new Error("Upload failed");
@@ -256,6 +257,7 @@ async function handleFiles(files, tracking, i) {
   }
   uploadEl.style.display = "none";
   fillEl.style.width = "0";
+  await new Promise(r => setTimeout(r, 1000));
   await refreshGrid(tracking, i);
   showToast("✅ อัพโหลดสำเร็จ "+done+" รูป");
 }
