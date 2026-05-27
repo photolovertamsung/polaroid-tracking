@@ -83,15 +83,15 @@
   .track-row { display: flex; align-items: flex-start; min-width: max-content; }
   .step-col { display: flex; flex-direction: column; align-items: center; width: 72px; }
   .step-emoji-row { display: flex; align-items: center; }
-  .sline { height: 3px; width: 13px; background: var(--sep); border-radius: 2px; }
-  .sline.done { background: var(--label); }
+  .sline { height: 3px; width: 13px; background: #D1D1D6; border-radius: 2px; }
+  .sline.done { background: #34C759; }
   .sline.hide { background: transparent; }
-  .step-circle { width: 46px; height: 46px; border-radius: 50%; background: var(--fill); border: 2px solid var(--sep); display: flex; align-items: center; justify-content: center; font-size: 22px; }
-  .step-circle.done { background: rgba(0,0,0,0.06); border-color: var(--label); }
-  .step-circle.active { background: var(--label); border-color: var(--label); box-shadow: 0 0 0 4px rgba(0,0,0,0.1); }
-  .step-label { font-size: 10px; color: var(--label4); text-align: center; margin-top: 6px; line-height: 1.4; max-width: 68px; }
-  .step-label.done { color: var(--label3); }
-  .step-label.active { color: var(--label); font-weight: 600; }
+  .step-circle { width: 48px; height: 48px; border-radius: 50%; background: #E5E5EA; border: none; display: flex; align-items: center; justify-content: center; font-size: 22px; opacity: 0.45; }
+  .step-circle.done { background: #34C759; opacity: 1; }
+  .step-circle.active { background: #1D9E75; opacity: 1; box-shadow: 0 0 0 5px rgba(29,158,117,0.2); }
+  .step-label { font-size: 10px; color: #C7C7CC; text-align: center; margin-top: 6px; line-height: 1.4; max-width: 68px; }
+  .step-label.done { color: #34C759; font-weight: 500; }
+  .step-label.active { color: #1D9E75; font-weight: 700; }
   .step-desc { background: var(--fill); border-radius: var(--rsm); padding: 10px 12px; margin-top: 12px; font-size: 13px; color: var(--label2); line-height: 1.6; }
   .step-warn { background: rgba(255,149,0,0.1); border-radius: var(--rsm); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #B25000; display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
   .delay-box { background: rgba(255,59,48,0.07); border: 0.5px solid rgba(255,59,48,0.25); border-radius: var(--rsm); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: var(--red); display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
