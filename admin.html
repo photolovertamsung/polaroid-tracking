@@ -66,6 +66,12 @@
   .autodel-sub { font-size: 12px; color: var(--text-muted); }
   .autodel-btn { padding: 10px 16px; background: var(--red); color: white; border: none; border-radius: var(--radius-sm); font-family: "Sarabun", sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .autodel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .secret-btn { width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; opacity: 0; margin-left: 4px; }
+  .secret-menu { position: absolute; top: 62px; right: 16px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.15); overflow: hidden; display: none; z-index: 100; min-width: 190px; }
+  .secret-menu.show { display: block; }
+  .secret-item { display: block; padding: 14px 16px; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); }
+  .secret-item:last-child { border-bottom: none; }
+  .secret-item:hover { background: var(--bg); }
 </style>
 </head>
 <body>
@@ -79,6 +85,10 @@
   </div>
   <a href="index.html" class="back-link">← หน้าหลัก</a>
   <a href="parse-order.html" style="margin-left:8px;font-size:12px;color:var(--green);text-decoration:none;padding:6px 10px;border-radius:6px;border:1px solid var(--green-border);background:var(--green-light);">✨ แยกออเดอร์</a>
+  <button class="secret-btn" onclick="toggleMenu()" aria-label="menu"></button>
+  <div class="secret-menu" id="secretMenu" style="position:absolute;top:62px;right:16px;">
+    <a href="status-board.html" class="secret-item">📊 บอร์ดสถานะ</a>
+  </div>
 </header>
 
 <main class="main">
@@ -350,6 +360,8 @@ async function refreshGrid(tracking, i) {
   document.getElementById("label_"+i).textContent = "📷 รูปสินค้า ("+photos.length+" รูป)";
 }
 
+function toggleMenu() { document.getElementById("secretMenu").classList.toggle("show"); }
+document.addEventListener("click", e=>{ if(!e.target.closest(".secret-btn")&&!e.target.closest(".secret-menu")) document.getElementById("secretMenu").classList.remove("show"); });
 loadSheet();
 </script>
 </body>
