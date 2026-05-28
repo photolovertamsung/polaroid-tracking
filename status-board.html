@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>บอร์ดสถานะ — Polaroid_tamsung</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --green: #1D9E75; --green-dark: #0F6E56; --green-light: #E1F5EE;
+    --green-border: #9FE1CB;
+    --bg: #F7F5F0; --surface: #FFFFFF; --border: rgba(0,0,0,0.1);
+    --text: #1a1a1a; --text-muted: #6b6b6b; --text-faint: #aaaaaa;
+    --radius: 12px; --radius-sm: 8px; --red: #E24B4A;
+    --orange: #FF9500; --blue: #007AFF;
+  }
+  body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+  .logo { width: 38px; height: 38px; background: var(--green); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+  .logo svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .header-text h1 { font-size: 15px; font-weight: 600; }
+  .header-text p { font-size: 12px; color: var(--text-muted); }
+  .back-link { margin-left: auto; font-size: 12px; color: var(--text-faint); text-decoration: none; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); }
+
+  .main { max-width: 560px; margin: 0 auto; padding: 16px 16px 60px; }
+
+  .sync-bar { font-size: 12px; color: var(--text-faint); display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-faint); flex-shrink: 0; }
+  .sync-dot.ok { background: var(--green); }
+  .sync-dot.err { background: var(--red); }
+
+  /* filter tabs */
+  .filter-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 16px; }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-row { display: flex; gap: 8px; min-width: max-content; padding-bottom: 2px; }
+  .filter-btn { padding: 8px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); font-family: 'Sarabun', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; display: flex; align-items: center; gap: 5px; }
+  .filter-btn:hover { border-color: var(--green); color: var(--green); }
+  .filter-btn.active { background: var(--green); border-color: var(--green); color: white; font-weight: 600; }
+  .filter-btn .count-badge { background: rgba(255,255,255,0.3); border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
+  .filter-btn:not(.active) .count-badge { background: var(--bg); color: var(--text-muted); }
+
+  /* summary row */
+  .summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+  .summary-num { font-size: 24px; font-weight: 700; }
+  .summary-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* order cards */
+  .group-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 16px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .group-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .order-list { display: flex; flex-direction: column; gap: 8px; }
+  .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 14px; display: flex; align-items: center; gap: 12px; }
+  .order-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .order-info { flex: 1; min-width: 0; }
+  .order-name { font-size: 14px; font-weight: 600; }
+  .order-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .order-chip { background: var(--bg); padding: 2px 7px; border-radius: 8px; font-size: 11px; }
+  .order-step-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+
+  .empty-state { text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 14px; line-height: 2; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
+  .toast.show { opacity: 1; }
+
+  /* step colors */
+  .s1 { background: #E3F2FD; color: #1565C0; }
+  .s1-dot { background: #1565C0; }
+  .s2 { background: #FFF3E0; color: #E65100; }
+  .s2-dot { background: #E65100; }
+  .s3 { background: #FFF8E1; color: #F57F17; }
+  .s3-dot { background: #F9A825; }
+  .s4 { background: #F3E5F5; color: #6A1B9A; }
+  .s4-dot { background: #8E24AA; }
+  .s5 { background: #E8F5E9; color: #2E7D32; }
+  .s5-dot { background: #43A047; }
+  .s6 { background: #E1F5EE; color: #0F6E56; }
+  .s6-dot { background: #1D9E75; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="15" rx="2"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="8" r="1" fill="white" stroke="none"/></svg>
+  </div>
+  <div class="header-text">
+    <h1>บอร์ดสถานะ</h1>
+    <p>ดูออเดอร์แยกตามขั้นตอน</p>
+  </div>
+  <a href="admin.html" class="back-link">← หลังบ้าน</a>
+</header>
+
+<main class="main">
+  <div class="sync-bar">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncStatus">กำลังโหลดข้อมูล...</span>
+    <button onclick="reloadSheet()" style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;color:var(--text-muted);">🔄 รีเฟรช</button>
+  </div>
+
+  <!-- summary -->
+  <div class="summary-row" id="summaryRow">
+    <div class="summary-card"><div class="summary-num" id="sumTotal">—</div><div class="summary-label">ทั้งหมด</div></div>
+    <div class="summary-card"><div class="summary-num" id="sumActive">—</div><div class="summary-label">กำลังดำเนินการ</div></div>
+    <div class="summary-card"><div class="summary-num" id="sumDone">—</div><div class="summary-label">จัดส่งแล้ว</div></div>
+  </div>
+
+  <!-- filter -->
+  <div class="filter-scroll">
+    <div class="filter-row" id="filterRow"></div>
+  </div>
+
+  <!-- list -->
+  <div id="boardContent"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRTvOZSL9sX3ezpv8wGlhHB4o50K6dPYPs5L_64JjQSbVPGtutC-YYixoMe_z7yJ8MY2rdmN64MEZTE/pub?output=csv";
+
+const STEPS = [
+  { id:1, emoji:"💸", label:"โอนเงินแล้ว",  colorClass:"s1" },
+  { id:2, emoji:"📂", label:"โหลดไฟล์แล้ว", colorClass:"s2" },
+  { id:3, emoji:"⏳", label:"รอคิวผลิต",    colorClass:"s3" },
+  { id:4, emoji:"🖨️", label:"กำลังผลิต",    colorClass:"s4" },
+  { id:5, emoji:"📦", label:"แพ็กของแล้ว",  colorClass:"s5" },
+  { id:6, emoji:"🚚", label:"จัดส่งแล้ว",   colorClass:"s6" },
+];
+
+let DB = [];
+let activeFilter = 0; // 0 = ทั้งหมด
+
+function splitCSV(line) {
+  const r = []; let c = "", q = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') q = !q;
+    else if (line[i] === ',' && !q) { r.push(c); c = ""; }
+    else c += line[i];
+  } r.push(c); return r;
+}
+
+function parseCSV(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const h = splitCSV(lines[0]).map(x => x.trim());
+  return lines.slice(1).map(l => {
+    const v = splitCSV(l), o = {};
+    h.forEach((k,i) => o[k] = (v[i]||"").trim());
+    return o;
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+function mapRow(r) {
+  const k = Object.keys(r);
+  const stepRaw = (r[k[7]]||"").trim();
+  let step = parseInt(stepRaw);
+  if (isNaN(step)) {
+    const s = stepRaw.toLowerCase();
+    if (s.includes("โอนเงิน")) step = 1;
+    else if (s.includes("โหลดไฟล์")) step = 2;
+    else if (s.includes("รอคิว")) step = 3;
+    else if (s.includes("กำลังผลิต")) step = 4;
+    else if (s.includes("แพ็ก")) step = 5;
+    else if (s.includes("จัดส่ง")) step = 6;
+    else step = 1;
+  }
+  return {
+    tracking:  r[k[0]]||"",
+    name:      r[k[1]]||"",
+    phone:     r[k[2]]||"",
+    province:  r[k[3]]||"",
+    date:      r[k[4]]||"",
+    courier:   r[k[5]]||"SPX",
+    orderCode: r[k[6]]||"",
+    step:      Math.min(Math.max(step,1),6),
+  };
+}
+
+async function loadSheet() {
+  try {
+    const res = await fetch(CSV_URL);
+    if (!res.ok) throw new Error();
+    DB = parseCSV(await res.text()).map(mapRow).filter(r => r.orderCode||r.name);
+    document.getElementById("syncStatus").textContent = "โหลดสำเร็จ ("+DB.length+" รายการ)";
+    document.getElementById("syncDot").className = "sync-dot ok";
+    renderAll();
+  } catch {
+    document.getElementById("syncStatus").textContent = "โหลดไม่สำเร็จ";
+    document.getElementById("syncDot").className = "sync-dot err";
+  }
+}
+
+function reloadSheet() {
+  document.getElementById("syncStatus").textContent = "กำลังโหลดข้อมูล...";
+  document.getElementById("syncDot").className = "sync-dot";
+  loadSheet();
+}
+
+function renderAll() {
+  // summary
+  const total = DB.length;
+  const done = DB.filter(r => r.step === 6).length;
+  const active = total - done;
+  document.getElementById("sumTotal").textContent = total;
+  document.getElementById("sumActive").textContent = active;
+  document.getElementById("sumDone").textContent = done;
+
+  // filter buttons
+  const filterRow = document.getElementById("filterRow");
+  const allCount = DB.length;
+  let btns = `<button class="filter-btn${activeFilter===0?' active':''}" onclick="setFilter(0)">ทั้งหมด <span class="count-badge">${allCount}</span></button>`;
+  STEPS.forEach(st => {
+    const cnt = DB.filter(r => r.step === st.id).length;
+    btns += `<button class="filter-btn${activeFilter===st.id?' active':''}" onclick="setFilter(${st.id})">${st.emoji} ${st.label} <span class="count-badge">${cnt}</span></button>`;
+  });
+  filterRow.innerHTML = btns;
+
+  // board
+  renderBoard();
+}
+
+function setFilter(stepId) {
+  activeFilter = stepId;
+  renderAll();
+}
+
+function renderBoard() {
+  const content = document.getElementById("boardContent");
+  const filtered = activeFilter === 0 ? DB : DB.filter(r => r.step === activeFilter);
+
+  if (!filtered.length) {
+    content.innerHTML = '<div class="empty-state">✨<br>ไม่มีออเดอร์ในขั้นตอนนี้ค่ะ</div>';
+    return;
+  }
+
+  // group by step
+  let html = "";
+  const groups = activeFilter === 0 ? STEPS.map(s=>s.id) : [activeFilter];
+
+  groups.forEach(stepId => {
+    const orders = filtered.filter(r => r.step === stepId);
+    if (!orders.length) return;
+    const st = STEPS[stepId-1];
+    html += `<div class="group-label">${st.emoji} ${st.label} · ${orders.length} ออเดอร์</div>`;
+    html += '<div class="order-list">';
+    orders.forEach(o => {
+      html += `
+        <div class="order-card">
+          <div class="order-status-dot ${st.colorClass}-dot"></div>
+          <div class="order-info">
+            <div class="order-name">${o.name}</div>
+            <div class="order-meta">
+              ${o.orderCode ? `<span class="order-chip">${o.orderCode}</span>` : ''}
+              ${o.phone ? `<span class="order-chip">${o.phone}</span>` : ''}
+              ${o.province ? `<span class="order-chip">📍${o.province}</span>` : ''}
+              ${o.date ? `<span class="order-chip">รอบ ${o.date}</span>` : ''}
+            </div>
+          </div>
+          <span class="order-step-tag ${st.colorClass}">${st.emoji} ${st.label}</span>
+        </div>`;
+    });
+    html += '</div>';
+  });
+
+  content.innerHTML = html;
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+loadSheet();
+</script>
+</body>
+</html>
