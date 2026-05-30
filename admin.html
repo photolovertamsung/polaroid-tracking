@@ -197,12 +197,17 @@ async function uploadPhoto(file, tracking) {
 }
 
 async function deletePhoto(tracking, filename, i) {
+  tracking = tracking.trim();
   const path = tracking+"/"+filename;
-  await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET, {
+  const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
     method: "DELETE",
-    headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
-    body: JSON.stringify({ prefixes: [path] })
+    headers: await sbHeaders(),
   });
+  if (!res.ok) {
+    const err = await res.text();
+    showToast("❌ ลบไม่สำเร็จ: "+err);
+    return;
+  }
   await refreshGrid(tracking, i);
   showToast("🗑 ลบรูปแล้ว");
 }
@@ -253,17 +258,13 @@ async function autoDeleteOld() {
 
   sub.textContent = "กำลังลบ "+toDelete.length+" ไฟล์...";
 
-  // Delete in batches of 20
-  const BATCH = 20;
   let deleted = 0;
-  for (let i = 0; i < toDelete.length; i += BATCH) {
-    const batch = toDelete.slice(i, i + BATCH);
-    await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET, {
+  for (const path of toDelete) {
+    const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
       method: "DELETE",
-      headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
-      body: JSON.stringify({ prefixes: batch })
+      headers: await sbHeaders(),
     });
-    deleted += batch.length;
+    if (res.ok) deleted++;
     sub.textContent = "ลบแล้ว "+deleted+"/"+toDelete.length+" ไฟล์...";
   }
 
