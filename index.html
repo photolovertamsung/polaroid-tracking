@@ -266,7 +266,7 @@ function mapRow(r) {
     else step = 1;
   }
   return {
-    tracking:     r["หมายเลขติดตามพัสดุ"]||"",
+    tracking:     (r["หมายเลขติดตามพัสดุ"]||"").trim(),
     name:         r["ชื่อผู้รับ"]||"",
     phone:        r["หมายเลขโทรศัพท์ผู้รับ"]||"",
     province:     r["จังหวัดของผู้รับ"]||"",
@@ -377,6 +377,7 @@ async function showResult(o) {
 
 async function getPhotos(tracking) {
   if (!tracking) return [];
+  tracking = tracking.trim(); // ตัด \n หรือ space ที่อาจติดมาจาก CSV
   if (photoCache[tracking] !== undefined) return photoCache[tracking];
   try {
     const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
