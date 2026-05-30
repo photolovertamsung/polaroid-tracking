@@ -106,7 +106,7 @@
   <p class="section-title">ค้นหาลูกค้า</p>
   <div class="search-card">
     <div class="input-row">
-      <input class="search-input" id="searchInput" placeholder="พิมพ์ชื่อหรือเบอร์โทร..." oninput="doSearch()" autocomplete="off"/>
+      <input class="search-input" id="searchInput" placeholder="ชื่อ, เบอร์, หรือรหัส PT-XXXXX..." oninput="doSearch()" autocomplete="off"/>
       <button class="search-btn" onclick="doSearch()">ค้นหา</button>
     </div>
     <p class="hint">พิมพ์บางส่วนก็ได้ค่ะ</p>
@@ -141,8 +141,15 @@ function parseCSV(text) {
   }).filter(r => Object.values(r).some(v => v));
 }
 function mapRow(r) {
-  const k = Object.keys(r);
-  return { tracking: r[k[0]]||"", name: r[k[1]]||"", phone: r[k[2]]||"", province: r[k[3]]||"", date: r[k[4]]||"", courier: r[k[5]]||"SPX" };
+  return {
+    tracking:  r["หมายเลขติดตามพัสดุ"]||"",
+    name:      r["ชื่อผู้รับ"]||"",
+    phone:     r["หมายเลขโทรศัพท์ผู้รับ"]||"",
+    province:  r["จังหวัดของผู้รับ"]||"",
+    date:      r["รอบจัดส่ง"]||"",
+    courier:   r["SPX"]||"SPX",
+    orderCode: r["รหัสออเดอร์"]||"",
+  };
 }
 
 async function sbHeaders() {
@@ -279,7 +286,11 @@ async function doSearch() {
   const q = document.getElementById("searchInput").value.trim().toLowerCase();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
-  const found = DB.filter(r => r.name.toLowerCase().includes(q) || r.phone.includes(q));
+  const found = DB.filter(r =>
+    r.name.toLowerCase().includes(q) ||
+    r.phone.includes(q) ||
+    r.orderCode.toLowerCase().includes(q)
+  );
   if (!found.length) { container.innerHTML = '<div class="empty-state">🔍<br>ไม่พบลูกค้า</div>'; return; }
   container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
   const cards = await Promise.all(found.map((r,i) => buildCard(r,i)));

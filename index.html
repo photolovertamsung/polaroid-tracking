@@ -239,8 +239,7 @@ function parseCSV(text) {
 }
 
 function mapRow(r) {
-  const k = Object.keys(r);
-  const stepRaw = (r[k[7]]||"").trim();
+  const stepRaw = (r["ขั้นตอนการผลิต"]||"").trim();
   let step = parseInt(stepRaw);
   if (isNaN(step)) {
     const s = stepRaw.toLowerCase();
@@ -253,18 +252,18 @@ function mapRow(r) {
     else step = 1;
   }
   return {
-    tracking:     r[k[0]]||"",
-    name:         r[k[1]]||"",
-    phone:        r[k[2]]||"",
-    province:     r[k[3]]||"",
-    date:         r[k[4]]||"",
-    courier:      r[k[5]]||"SPX",
-    orderCode:    r[k[6]]||"",
+    tracking:     r["หมายเลขติดตามพัสดุ"]||"",
+    name:         r["ชื่อผู้รับ"]||"",
+    phone:        r["หมายเลขโทรศัพท์ผู้รับ"]||"",
+    province:     r["จังหวัดของผู้รับ"]||"",
+    date:         r["รอบจัดส่ง"]||"",
+    courier:      r["SPX"]||"SPX",
+    orderCode:    r["รหัสออเดอร์"]||"",
     step:         step,
-    note:         r[k[8]]||"",
-    items:        r[k[9]]||"",
-    trackingLink: r[k[10]]||"",
-    address:      r[k[11]]||"",
+    note:         r["หมายเหตุ"]||"",
+    items:        r["รายการสินค้า"]||"",
+    trackingLink: r["ลิงค์พัสดุ"]||"",
+    address:      r[""]||"",
   };
 }
 
@@ -284,10 +283,11 @@ async function loadSheet() {
 function normalizePhone(p) { return p.replace(/\D/g,"").replace(/^0+/,""); }
 
 function doSearch() {
-  const code = "PT-" + document.getElementById("inCode").value.trim();
+  const codeRaw = document.getElementById("inCode").value.trim();
   const phone = normalizePhone(document.getElementById("inPhone").value.trim());
   const errEl = document.getElementById("errMsg");
-  if (!code || !phone) return;
+  if (!codeRaw || !phone) return;
+  const code = "PT-" + codeRaw;
   const found = DB.find(r => r.orderCode.toUpperCase() === code.toUpperCase() && normalizePhone(r.phone) === phone);
   if (found) { errEl.style.display = "none"; showResult(found); }
   else { document.getElementById("result").classList.remove("show"); errEl.style.display = "block"; }
