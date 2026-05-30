@@ -252,6 +252,7 @@ function parseCSV(text) {
 }
 
 function mapRow(r) {
+  const vals = Object.values(r); // ใช้ index ดึง col ที่ header ว่าง
   const stepRaw = (r["ขั้นตอนการผลิต"]||"").trim();
   let step = parseInt(stepRaw);
   if (isNaN(step)) {
@@ -276,7 +277,7 @@ function mapRow(r) {
     note:         r["หมายเหตุ"]||"",
     items:        r["รายการสินค้า"]||"",
     trackingLink: r["ลิงค์พัสดุ"]||"",
-    address:      r[""]||"",
+    address:      vals[11]||"",  // col L (index 11)
   };
 }
 

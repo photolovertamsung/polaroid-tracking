@@ -126,15 +126,26 @@ function splitCSV(line) {
   const r = []; let c = "", q = false;
   for (let i = 0; i < line.length; i++) {
     if (line[i] === '"') q = !q;
-    else if (line[i] === ',' && !q) { r.push(c); c = ""; }
+    else if (line[i] === ',' && !q) { r.push(c.trim()); c = ""; }
     else c += line[i];
-  } r.push(c); return r;
+  } r.push(c.trim()); return r;
 }
 function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-  const h = splitCSV(lines[0]).map(x => x.trim());
-  return lines.slice(1).map(l => {
+  const rows = [];
+  let cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') { q = !q; cur += ch; }
+    else if ((ch === '\n' || ch === '\r') && !q) {
+      if (text[i] === '\r' && text[i+1] === '\n') i++;
+      if (cur.trim()) rows.push(cur);
+      cur = "";
+    } else { cur += ch; }
+  }
+  if (cur.trim()) rows.push(cur);
+  if (rows.length < 2) return [];
+  const h = splitCSV(rows[0]).map(x => x.trim());
+  return rows.slice(1).map(l => {
     const v = splitCSV(l), o = {};
     h.forEach((k,i) => o[k] = (v[i]||"").trim());
     return o;
