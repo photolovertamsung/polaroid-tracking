@@ -245,7 +245,7 @@ function parseCSV(text) {
   if (rows.length < 2) return [];
   const h = splitCSV(rows[0]).map(x => x.trim());
   return rows.slice(1).map(l => {
-    const v = splitCSV(l), o = {};
+    const v = splitCSV(l), o = {_raw: v};
     h.forEach((k, i) => o[k] = (v[i]||"").trim());
     return o;
   }).filter(r => Object.values(r).some(v => v));
@@ -277,7 +277,7 @@ function mapRow(r) {
     note:         r["หมายเหตุ"]||"",
     items:        r["รายการสินค้า"]||"",
     trackingLink: r["ลิงค์พัสดุ"]||"",
-    address:      [vals[11],vals[12]].find(v=>v&&v!=="TRUE"&&v.trim()!=="")||"",  // col L หรือ M
+    address:      r["ที่อยู่จัดส่ง"]||""
   };
 }
 
