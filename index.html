@@ -277,7 +277,7 @@ function mapRow(r) {
     note:         r["หมายเหตุ"]||"",
     items:        r["รายการสินค้า"]||"",
     trackingLink: r["ลิงค์พัสดุ"]||"",
-    address:      vals[11]||"",  // col L (index 11)
+    address:      [vals[11],vals[12]].find(v=>v&&v!=="TRUE"&&v.trim()!=="")||"",  // col L หรือ M
   };
 }
 
