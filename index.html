@@ -366,7 +366,7 @@ async function showResult(o) {
     trackBox.style.display="none";
   }
 
-  const photos = await getPhotos(o.tracking);
+  const photos = await getPhotos(o.orderCode);
   const photoDiv = document.getElementById("rPhotos");
   photoDiv.innerHTML = photos.length
     ? photos.map(p=>'<img class="product-img" src="'+p+'" alt="รูปสินค้า" loading="lazy" onclick="openLightbox(this.src)">').join("")+'<p class="img-note">📌 รูปสินค้ามีอายุ 7 วันหลังจัดส่ง</p>'
@@ -375,22 +375,22 @@ async function showResult(o) {
   document.getElementById("result").classList.add("show");
 }
 
-async function getPhotos(tracking) {
-  if (!tracking) return [];
-  tracking = tracking.trim(); // ตัด \n หรือ space ที่อาจติดมาจาก CSV
-  if (photoCache[tracking] !== undefined) return photoCache[tracking];
+async function getPhotos(orderCode) {
+  if (!orderCode) return [];
+  orderCode = orderCode.trim();
+  if (photoCache[orderCode] !== undefined) return photoCache[orderCode];
   try {
     const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
       method:"POST",
       headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"},
-      body:JSON.stringify({prefix:tracking+"/",limit:20})
+      body:JSON.stringify({prefix:orderCode+"/",limit:20})
     });
-    if (!res.ok) { photoCache[tracking]=[]; return []; }
+    if (!res.ok) { photoCache[orderCode]=[]; return []; }
     const data = await res.json();
     const ts = Date.now();
-    const urls = (data||[]).filter(f=>f.name).map(f=>SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+tracking+"/"+f.name+"?t="+ts);
-    photoCache[tracking]=urls; return urls;
-  } catch { photoCache[tracking]=[]; return []; }
+    const urls = (data||[]).filter(f=>f.name).map(f=>SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+orderCode+"/"+f.name+"?t="+ts);
+    photoCache[orderCode]=urls; return urls;
+  } catch { photoCache[orderCode]=[]; return []; }
 }
 
 function copyTrack() {

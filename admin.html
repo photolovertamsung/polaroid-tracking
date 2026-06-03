@@ -167,26 +167,27 @@ async function sbHeaders() {
   return { "apikey": SUPABASE_KEY, "Authorization": "Bearer "+SUPABASE_KEY };
 }
 
-async function getPhotos(tracking) {
+async function getPhotos(orderCode) {
+  if (!orderCode) return [];
   try {
     const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
       method: "POST",
       headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
-      body: JSON.stringify({ prefix: tracking+"/", limit: 20 })
+      body: JSON.stringify({ prefix: orderCode+"/", limit: 20 })
     });
     if (!res.ok) return [];
     const data = await res.json();
     const ts = Date.now();
     return (data||[]).filter(f => f.name).map(f =>
-      SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+tracking+"/"+f.name+"?t="+ts
+      SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+orderCode+"/"+f.name+"?t="+ts
     );
   } catch { return []; }
 }
 
-async function uploadPhoto(file, tracking) {
+async function uploadPhoto(file, orderCode) {
   const ext = file.name.split(".").pop() || "jpg";
   const filename = Date.now()+"_"+Math.random().toString(36).slice(2)+"."+ext;
-  const path = tracking+"/"+filename;
+  const path = orderCode+"/"+filename;
   const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
     method: "POST",
     headers: { ...(await sbHeaders()), "Content-Type": file.type||"image/jpeg", "x-upsert": "true" },
@@ -196,9 +197,9 @@ async function uploadPhoto(file, tracking) {
   return SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+path;
 }
 
-async function deletePhoto(tracking, filename, i) {
-  tracking = tracking.trim();
-  const path = tracking+"/"+filename;
+async function deletePhoto(orderCode, filename, i) {
+  orderCode = orderCode.trim();
+  const path = orderCode+"/"+filename;
   const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
     method: "DELETE",
     headers: await sbHeaders(),
@@ -208,21 +209,22 @@ async function deletePhoto(tracking, filename, i) {
     showToast("❌ ลบไม่สำเร็จ: "+err);
     return;
   }
-  await refreshGrid(tracking, i);
+  await refreshGrid(orderCode, i);
   showToast("🗑 ลบรูปแล้ว");
 }
 
-async function getPhotosWithMeta(tracking) {
+async function getPhotosWithMeta(orderCode) {
+  if (!orderCode) return [];
   try {
     const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
       method: "POST",
       headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
-      body: JSON.stringify({ prefix: tracking+"/", limit: 100 })
+      body: JSON.stringify({ prefix: orderCode+"/", limit: 100 })
     });
     if (!res.ok) return [];
     const data = await res.json();
     return (data||[]).filter(f => f.name && f.created_at).map(f => ({
-      path: tracking+"/"+f.name,
+      path: orderCode+"/"+f.name,
       created_at: new Date(f.created_at)
     }));
   } catch { return []; }
@@ -239,11 +241,11 @@ async function autoDeleteOld() {
   sub.textContent = "กำลังตรวจสอบไฟล์ทั้งหมด...";
 
   const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const allTrackings = DB.map(r => r.tracking).filter(Boolean);
+  const allOrderCodes = DB.map(r => r.orderCode).filter(Boolean);
   let toDelete = [];
 
-  for (const tracking of allTrackings) {
-    const files = await getPhotosWithMeta(tracking);
+  for (const orderCode of allOrderCodes) {
+    const files = await getPhotosWithMeta(orderCode);
     const old = files.filter(f => f.created_at < cutoff);
     toDelete = toDelete.concat(old.map(f => f.path));
   }
@@ -307,26 +309,26 @@ async function doSearch() {
   container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
   const cards = await Promise.all(found.map((r,i) => buildCard(r,i)));
   container.innerHTML = '<p class="result-count">พบ '+found.length+' รายการ</p>' + cards.join("");
-  found.forEach((r,i) => attachUpload(r.tracking, i));
+  found.forEach((r,i) => attachUpload(r.orderCode, i));
 }
 
 async function buildCard(r, i) {
-  const photos = await getPhotos(r.tracking);
+  const photos = await getPhotos(r.orderCode);
   return '<div class="admin-card">'+
     '<div class="admin-card-top">'+
       '<div><div class="card-name">'+r.name+'</div>'+
       '<div class="card-sub">'+r.phone+(r.province?' · '+r.province:'')+'</div></div>'+
-      '<span class="tracking-chip">'+r.tracking+'</span>'+
+      '<span class="tracking-chip">'+r.orderCode+'</span>'+
     '</div>'+
     '<div class="photo-section">'+
       '<div class="photo-label" id="label_'+i+'">📷 รูปสินค้า ('+photos.length+' รูป)</div>'+
       '<div class="photo-grid" id="grid_'+i+'">'+
         photos.map(url => {
           const fname = url.split("/").pop();
-          return '<div class="photo-item"><img src="'+url+'" loading="lazy"><button class="photo-del" onclick="deletePhoto(\''+r.tracking+'\',\''+fname+'\','+i+')">✕</button></div>';
+          return '<div class="photo-item"><img src="'+url+'" loading="lazy"><button class="photo-del" onclick="deletePhoto(\''+r.orderCode+'\',\''+fname+'\','+i+')">✕</button></div>';
         }).join("")+
       '</div>'+
-      '<label class="upload-area" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="handleDrop(event,\''+r.tracking+'\','+i+')">'+
+      '<label class="upload-area" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="handleDrop(event,\''+r.orderCode+'\','+i+')">'+
         '<input type="file" accept="image/*" multiple id="fileInput_'+i+'">'+
         '<div class="upload-icon">📸</div>'+
         '<div class="upload-text"><span>กดเพื่อเลือกรูป</span> หรือลากมาวาง</div>'+
@@ -340,21 +342,21 @@ async function buildCard(r, i) {
   '</div>';
 }
 
-function attachUpload(tracking, i) {
+function attachUpload(orderCode, i) {
   const inp = document.getElementById("fileInput_"+i);
   if (inp) inp.addEventListener("change", function() {
-    handleFiles(Array.from(this.files), tracking, i);
+    handleFiles(Array.from(this.files), orderCode, i);
     this.value = "";
   });
 }
 
-function handleDrop(e, tracking, i) {
+function handleDrop(e, orderCode, i) {
   e.preventDefault();
   e.currentTarget.classList.remove("drag");
-  handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/")), tracking, i);
+  handleFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/")), orderCode, i);
 }
 
-async function handleFiles(files, tracking, i) {
+async function handleFiles(files, orderCode, i) {
   if (!files.length) return;
   const uploadEl = document.getElementById("uploading_"+i);
   const fillEl = document.getElementById("fill_"+i);
@@ -362,7 +364,7 @@ async function handleFiles(files, tracking, i) {
   let done = 0;
   for (const file of files) {
     try {
-      await uploadPhoto(file, tracking);
+      await uploadPhoto(file, orderCode);
     } catch { showToast("❌ อัพโหลดไม่สำเร็จ ลองใหม่ค่ะ"); }
     done++;
     fillEl.style.width = (done/files.length*100)+"%";
@@ -370,15 +372,15 @@ async function handleFiles(files, tracking, i) {
   uploadEl.style.display = "none";
   fillEl.style.width = "0";
   await new Promise(r => setTimeout(r, 1000));
-  await refreshGrid(tracking, i);
+  await refreshGrid(orderCode, i);
   showToast("✅ อัพโหลดสำเร็จ "+done+" รูป");
 }
 
-async function refreshGrid(tracking, i) {
-  const photos = await getPhotos(tracking);
+async function refreshGrid(orderCode, i) {
+  const photos = await getPhotos(orderCode);
   document.getElementById("grid_"+i).innerHTML = photos.map(url => {
     const fname = url.split("/").pop();
-    return '<div class="photo-item"><img src="'+url+'" loading="lazy"><button class="photo-del" onclick="deletePhoto(\''+tracking+'\',\''+fname+'\','+i+')">✕</button></div>';
+    return '<div class="photo-item"><img src="'+url+'" loading="lazy"><button class="photo-del" onclick="deletePhoto(\''+orderCode+'\',\''+fname+'\','+i+')">✕</button></div>';
   }).join("");
   document.getElementById("label_"+i).textContent = "📷 รูปสินค้า ("+photos.length+" รูป)";
 }
