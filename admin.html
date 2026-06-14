@@ -96,20 +96,18 @@
     <div class="sync-dot" id="syncDot"></div>
     <span id="syncStatus">กำลังโหลดข้อมูล...</span>
   </div>
-  <div class="autodel-card">
-    <div class="autodel-info">
-      <div class="autodel-title">🗑 ลบรูปเก่าเกิน 7 วัน</div>
-      <div class="autodel-sub" id="autodelSub">ลบรูปทั้งหมดที่อัพโหลดเกิน 7 วันแล้วออกจาก Supabase</div>
-    </div>
-    <button class="autodel-btn" id="autodelBtn" onclick="autoDeleteOld()">ลบเลย</button>
-  </div>
+
   <p class="section-title">ค้นหาลูกค้า</p>
   <div class="search-card">
     <div class="input-row">
-      <input class="search-input" id="searchInput" placeholder="ชื่อ, เบอร์, หรือรหัส PT-XXXXX..." oninput="doSearch()" autocomplete="off"/>
+      <div style="flex:1; display:flex; align-items:center; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg); overflow:hidden;">
+        <span style="padding:0 10px 0 14px; font-size:14px; font-weight:600; color:var(--green); white-space:nowrap; user-select:none;">PT-</span>
+        <input class="search-input" id="searchInput" placeholder="XXXXX..." oninput="doSearch()" autocomplete="off" inputmode="numeric"
+          style="border:none; border-radius:0; padding-left:0; background:transparent; flex:1;"/>
+      </div>
       <button class="search-btn" onclick="doSearch()">ค้นหา</button>
     </div>
-    <p class="hint">พิมพ์บางส่วนก็ได้ค่ะ</p>
+    <p class="hint">พิมพ์เลขรหัสออเดอร์ได้เลยค่ะ</p>
   </div>
   <div id="results"></div>
 </main>
@@ -230,51 +228,7 @@ async function getPhotosWithMeta(orderCode) {
   } catch { return []; }
 }
 
-async function autoDeleteOld() {
-  const btn = document.getElementById("autodelBtn");
-  const sub = document.getElementById("autodelSub");
-  const confirmed = confirm("ยืนยันลบรูปที่อัพโหลดเกิน 7 วันทั้งหมดออกจาก Supabase ใช่ไหมคะ?");
-  if (!confirmed) return;
 
-  btn.disabled = true;
-  btn.textContent = "กำลังสแกน...";
-  sub.textContent = "กำลังตรวจสอบไฟล์ทั้งหมด...";
-
-  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const allOrderCodes = DB.map(r => r.orderCode).filter(Boolean);
-  let toDelete = [];
-
-  for (const orderCode of allOrderCodes) {
-    const files = await getPhotosWithMeta(orderCode);
-    const old = files.filter(f => f.created_at < cutoff);
-    toDelete = toDelete.concat(old.map(f => f.path));
-  }
-
-  if (toDelete.length === 0) {
-    sub.textContent = "ไม่มีรูปที่เก่าเกิน 7 วันค่ะ ✨";
-    btn.disabled = false;
-    btn.textContent = "ลบเลย";
-    showToast("✨ ไม่มีรูปที่ต้องลบค่ะ");
-    return;
-  }
-
-  sub.textContent = "กำลังลบ "+toDelete.length+" ไฟล์...";
-
-  let deleted = 0;
-  for (const path of toDelete) {
-    const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
-      method: "DELETE",
-      headers: await sbHeaders(),
-    });
-    if (res.ok) deleted++;
-    sub.textContent = "ลบแล้ว "+deleted+"/"+toDelete.length+" ไฟล์...";
-  }
-
-  btn.disabled = false;
-  btn.textContent = "ลบเลย";
-  sub.textContent = "ลบรูปทั้งหมดที่อัพโหลดเกิน 7 วันแล้วออกจาก Supabase";
-  showToast("🗑 ลบรูปเก่าแล้ว "+deleted+" ไฟล์");
-}
 
 async function loadSheet() {
   try {
@@ -297,14 +251,11 @@ function showToast(msg) {
 }
 
 async function doSearch() {
-  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  const q = document.getElementById("searchInput").value.trim();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
-  const found = DB.filter(r =>
-    r.name.toLowerCase().includes(q) ||
-    r.phone.includes(q) ||
-    r.orderCode.toLowerCase().includes(q)
-  );
+  const fullCode = "PT-" + q;
+  const found = DB.filter(r => r.orderCode.toLowerCase().includes(fullCode.toLowerCase()));
   if (!found.length) { container.innerHTML = '<div class="empty-state">🔍<br>ไม่พบลูกค้า</div>'; return; }
   container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
   const cards = await Promise.all(found.map((r,i) => buildCard(r,i)));
@@ -387,7 +338,55 @@ async function refreshGrid(orderCode, i) {
 
 function toggleMenu() { document.getElementById("secretMenu").classList.toggle("show"); }
 document.addEventListener("click", e=>{ if(!e.target.closest(".secret-btn")&&!e.target.closest(".secret-menu")) document.getElementById("secretMenu").classList.remove("show"); });
-loadSheet();
+async function autoDeleteOldSilent() {
+  // List ทุก folder/ไฟล์ใน bucket โดยตรง ไม่ต้องพึ่ง Sheet
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  let toDelete = [];
+  try {
+    // ดึง folder ทั้งหมดใน root
+    const rootRes = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
+      method: "POST",
+      headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
+      body: JSON.stringify({ prefix: "", delimiter: "/", limit: 500 })
+    });
+    if (!rootRes.ok) return;
+    const rootData = await rootRes.json();
+    const folders = (rootData.prefixes || []);
+    // ไฟล์ใน root โดยตรง
+    (rootData||[]).filter(f => f.name && f.created_at).forEach(f => {
+      if (new Date(f.created_at) < cutoff) toDelete.push(f.name);
+    });
+    // ไฟล์ในแต่ละ folder
+    for (const folder of folders) {
+      const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
+        method: "POST",
+        headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
+        body: JSON.stringify({ prefix: folder, limit: 200 })
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      (data||[]).filter(f => f.name && f.created_at).forEach(f => {
+        if (new Date(f.created_at) < cutoff) toDelete.push(folder+f.name);
+      });
+    }
+  } catch { return; }
+  if (toDelete.length === 0) return;
+  let deleted = 0;
+  for (const path of toDelete) {
+    const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
+      method: "DELETE",
+      headers: await sbHeaders(),
+    });
+    if (res.ok) deleted++;
+  }
+  if (deleted > 0) showToast("🗑 ลบรูปเก่าอัตโนมัติ "+deleted+" ไฟล์");
+}
+
+async function initPage() {
+  await loadSheet();
+  autoDeleteOldSilent();
+}
+initPage();
 </script>
 </body>
 </html>
