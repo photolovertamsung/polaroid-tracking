@@ -66,6 +66,26 @@
   .autodel-sub { font-size: 12px; color: var(--text-muted); }
   .autodel-btn { padding: 10px 16px; background: var(--red); color: white; border: none; border-radius: var(--radius-sm); font-family: "Sarabun", sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .autodel-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: var(--surface); border-radius: var(--radius); padding: 20px; max-width: 420px; width: 100%; max-height: 80vh; overflow-y: auto; }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+  .modal-body { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+  .modal-stat { background: var(--bg); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; }
+  .modal-stat-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+  .modal-stat-row span:first-child { color: var(--text-muted); }
+  .modal-stat-row span:last-child { font-weight: 600; }
+  .modal-file-list { max-height: 160px; overflow-y: auto; font-size: 12px; font-family: monospace; color: var(--text-muted); background: var(--bg); border-radius: var(--radius-sm); padding: 8px 10px; margin-bottom: 14px; }
+  .modal-file-list div { padding: 2px 0; word-break: break-all; }
+  .modal-actions { display: flex; gap: 8px; }
+  .modal-btn { flex: 1; padding: 11px; border-radius: var(--radius-sm); font-family: "Sarabun", sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); }
+  .modal-btn.cancel { background: var(--surface); color: var(--text); }
+  .modal-btn.confirm { background: var(--red); color: white; border: none; }
+  .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .modal-progress { display: none; }
+  .modal-progress.show { display: block; }
+  .modal-spinner { width: 28px; height: 28px; border: 3px solid var(--green-light); border-top-color: var(--green); border-radius: 50%; margin: 0 auto 12px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
   .secret-btn { width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; opacity: 0; margin-left: 4px; }
   .secret-menu { position: absolute; top: 62px; right: 16px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.15); overflow: hidden; display: none; z-index: 100; min-width: 190px; }
   .secret-menu.show { display: block; }
@@ -97,6 +117,14 @@
     <span id="syncStatus">กำลังโหลดข้อมูล...</span>
   </div>
 
+  <div class="autodel-card">
+    <div class="autodel-info">
+      <div class="autodel-title">ลบรูปเก่ากว่า 7 วัน</div>
+      <div class="autodel-sub">ลดพื้นที่ storage ที่ใช้ไป</div>
+    </div>
+    <button class="autodel-btn" onclick="openCleanupModal()">🗑 ลบรูปเก่า</button>
+  </div>
+
   <p class="section-title">ค้นหาลูกค้า</p>
   <div class="search-card">
     <div class="input-row">
@@ -112,6 +140,50 @@
   <div id="results"></div>
 </main>
 <div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="cleanupModal">
+  <div class="modal-box">
+    <div class="modal-title">🗑 ลบรูปเก่ากว่า 7 วัน</div>
+
+    <div id="cleanupScanning">
+      <div class="modal-spinner"></div>
+      <div class="modal-body" style="text-align:center;">กำลังตรวจสอบไฟล์เก่า... อาจใช้เวลาสักครู่</div>
+    </div>
+
+    <div id="cleanupResult" style="display:none;">
+      <div class="modal-stat">
+        <div class="modal-stat-row"><span>จำนวนไฟล์ที่จะลบ</span><span id="cleanupCount">0</span></div>
+        <div class="modal-stat-row"><span>ขนาดรวม</span><span id="cleanupSize">0 MB</span></div>
+      </div>
+      <div class="modal-file-list" id="cleanupFileList"></div>
+      <div class="modal-body" id="cleanupNoFiles" style="display:none;">ไม่พบไฟล์ที่เก่ากว่า 7 วันค่ะ ✅</div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" onclick="closeCleanupModal()">ยกเลิก</button>
+        <button class="modal-btn confirm" id="cleanupConfirmBtn" onclick="confirmCleanup()">ยืนยันลบ</button>
+      </div>
+    </div>
+
+    <div id="cleanupDeleting" style="display:none;">
+      <div class="modal-spinner"></div>
+      <div class="modal-body" style="text-align:center;" id="cleanupProgress">กำลังลบ... 0 / 0</div>
+      <div class="progress-bar"><div class="progress-fill" id="cleanupFill"></div></div>
+    </div>
+
+    <div id="cleanupDone" style="display:none;">
+      <div class="modal-body" id="cleanupDoneText" style="text-align:center; font-size:15px;"></div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" style="flex:1;" onclick="closeCleanupModal()">ปิด</button>
+      </div>
+    </div>
+
+    <div id="cleanupError" style="display:none;">
+      <div class="modal-body" id="cleanupErrorText" style="color:var(--red);"></div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" style="flex:1;" onclick="closeCleanupModal()">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
 const SUPABASE_URL = "https://zduqfsbohimmvoxiikxf.supabase.co";
@@ -341,53 +413,140 @@ async function refreshGrid(orderCode, i) {
 
 function toggleMenu() { document.getElementById("secretMenu").classList.toggle("show"); }
 document.addEventListener("click", e=>{ if(!e.target.closest(".secret-btn")&&!e.target.closest(".secret-menu")) document.getElementById("secretMenu").classList.remove("show"); });
-async function autoDeleteOldSilent() {
-  // List ทุก folder/ไฟล์ใน bucket โดยตรง ไม่ต้องพึ่ง Sheet
-  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  let toDelete = [];
-  try {
-    // ดึง folder ทั้งหมดใน root
-    const rootRes = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
+async function listAllPages(prefix, options) {
+  // ดึงรายการทั้งหมดแบบ pagination (Storage API จำกัด limit ต่อ request)
+  const pageLimit = (options && options.limit) || 1000;
+  const delimiter = options && options.delimiter;
+  let all = [];
+  let offset = 0;
+  while (true) {
+    const body = { prefix: prefix, limit: pageLimit, offset: offset };
+    if (delimiter) body.delimiter = delimiter;
+    const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
       method: "POST",
       headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
-      body: JSON.stringify({ prefix: "", delimiter: "/", limit: 500 })
+      body: JSON.stringify(body)
     });
-    if (!rootRes.ok) return;
-    const rootData = await rootRes.json();
-    const folders = (rootData.prefixes || []);
-    // ไฟล์ใน root โดยตรง
-    (rootData||[]).filter(f => f.name && f.created_at).forEach(f => {
-      if (new Date(f.created_at) < cutoff) toDelete.push(f.name);
-    });
-    // ไฟล์ในแต่ละ folder
-    for (const folder of folders) {
-      const res = await fetch(SUPABASE_URL+"/storage/v1/object/list/"+BUCKET, {
-        method: "POST",
-        headers: { ...(await sbHeaders()), "Content-Type": "application/json" },
-        body: JSON.stringify({ prefix: folder, limit: 200 })
-      });
-      if (!res.ok) continue;
-      const data = await res.json();
-      (data||[]).filter(f => f.name && f.created_at).forEach(f => {
-        if (new Date(f.created_at) < cutoff) toDelete.push(folder+f.name);
-      });
-    }
-  } catch { return; }
-  if (toDelete.length === 0) return;
-  let deleted = 0;
-  for (const path of toDelete) {
-    const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+path, {
-      method: "DELETE",
-      headers: await sbHeaders(),
-    });
-    if (res.ok) deleted++;
+    if (!res.ok) break;
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) break;
+    all = all.concat(data);
+    if (data.length < pageLimit) break; // หน้าสุดท้ายแล้ว
+    offset += pageLimit;
   }
-  if (deleted > 0) showToast("🗑 ลบรูปเก่าอัตโนมัติ "+deleted+" ไฟล์");
+  return all;
+}
+
+async function findOldFiles() {
+  // หาไฟล์ทั้งหมดที่เก่ากว่า 7 วัน อิงจาก created_at จริงของไฟล์ (ไม่ใช่ชื่อโฟลเดอร์)
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  let oldFiles = [];
+  const rootEntries = await listAllPages("", { delimiter: "/" });
+  // ไฟล์จริงที่อยู่ระดับ root (มี id ไม่เป็น null)
+  rootEntries.filter(f => f.name && f.id && f.created_at).forEach(f => {
+    if (new Date(f.created_at) < cutoff) oldFiles.push({ path: f.name, created_at: f.created_at, size: (f.metadata && f.metadata.size) || 0 });
+  });
+  // โฟลเดอร์ (id เป็น null) คือ order code ต่างๆ
+  const folders = rootEntries.filter(f => f.name && !f.id).map(f => f.name + "/");
+  for (const folder of folders) {
+    const files = await listAllPages(folder, {});
+    files.filter(f => f.name && f.created_at).forEach(f => {
+      if (new Date(f.created_at) < cutoff) oldFiles.push({ path: folder+f.name, created_at: f.created_at, size: (f.metadata && f.metadata.size) || 0 });
+    });
+  }
+  return oldFiles;
+}
+
+let pendingOldFiles = [];
+
+function openCleanupModal() {
+  document.getElementById("cleanupModal").classList.add("show");
+  document.getElementById("cleanupScanning").style.display = "block";
+  document.getElementById("cleanupResult").style.display = "none";
+  document.getElementById("cleanupDeleting").style.display = "none";
+  document.getElementById("cleanupDone").style.display = "none";
+  document.getElementById("cleanupError").style.display = "none";
+  scanOldFiles();
+}
+
+function closeCleanupModal() {
+  document.getElementById("cleanupModal").classList.remove("show");
+}
+
+async function scanOldFiles() {
+  try {
+    pendingOldFiles = await findOldFiles();
+  } catch (e) {
+    document.getElementById("cleanupScanning").style.display = "none";
+    document.getElementById("cleanupError").style.display = "block";
+    document.getElementById("cleanupErrorText").textContent = "ตรวจสอบไฟล์ไม่สำเร็จ: "+(e.message||e);
+    return;
+  }
+  document.getElementById("cleanupScanning").style.display = "none";
+  document.getElementById("cleanupResult").style.display = "block";
+
+  const count = pendingOldFiles.length;
+  const totalMb = (pendingOldFiles.reduce((s,f) => s + (f.size||0), 0) / 1024 / 1024).toFixed(2);
+  document.getElementById("cleanupCount").textContent = count + " ไฟล์";
+  document.getElementById("cleanupSize").textContent = totalMb + " MB";
+
+  const listEl = document.getElementById("cleanupFileList");
+  const noFilesEl = document.getElementById("cleanupNoFiles");
+  const confirmBtn = document.getElementById("cleanupConfirmBtn");
+
+  if (count === 0) {
+    listEl.style.display = "none";
+    noFilesEl.style.display = "block";
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "ไม่มีไฟล์ให้ลบ";
+  } else {
+    listEl.style.display = "block";
+    noFilesEl.style.display = "none";
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "ยืนยันลบ";
+    // โชว์ตัวอย่างสูงสุด 30 รายการ กันรายการยาวเกินไป
+    const preview = pendingOldFiles.slice(0, 30);
+    listEl.innerHTML = preview.map(f => {
+      const d = new Date(f.created_at);
+      const dateStr = d.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'2-digit' });
+      return '<div>'+dateStr+' — '+f.path+'</div>';
+    }).join("") + (count > 30 ? '<div>... และอีก '+(count-30)+' ไฟล์</div>' : '');
+  }
+}
+
+async function confirmCleanup() {
+  document.getElementById("cleanupResult").style.display = "none";
+  document.getElementById("cleanupDeleting").style.display = "block";
+
+  const total = pendingOldFiles.length;
+  let deleted = 0;
+  let failed = 0;
+  const progressEl = document.getElementById("cleanupProgress");
+  const fillEl = document.getElementById("cleanupFill");
+
+  for (const f of pendingOldFiles) {
+    try {
+      const res = await fetch(SUPABASE_URL+"/storage/v1/object/"+BUCKET+"/"+f.path, {
+        method: "DELETE",
+        headers: await sbHeaders(),
+      });
+      if (res.ok) deleted++; else failed++;
+    } catch (e) { failed++; }
+    progressEl.textContent = "กำลังลบ... "+(deleted+failed)+" / "+total;
+    fillEl.style.width = ((deleted+failed)/total*100)+"%";
+  }
+
+  document.getElementById("cleanupDeleting").style.display = "none";
+  document.getElementById("cleanupDone").style.display = "block";
+  document.getElementById("cleanupDoneText").textContent =
+    failed > 0
+      ? "✅ ลบสำเร็จ "+deleted+" ไฟล์ ⚠️ ไม่สำเร็จ "+failed+" ไฟล์"
+      : "✅ ลบสำเร็จทั้งหมด "+deleted+" ไฟล์";
+  pendingOldFiles = [];
 }
 
 async function initPage() {
   await loadSheet();
-  autoDeleteOldSilent();
 }
 initPage();
 </script>
