@@ -84,7 +84,14 @@
   .modal-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .modal-progress { display: none; }
   .modal-progress.show { display: block; }
-  .modal-spinner { width: 28px; height: 28px; border: 3px solid var(--green-light); border-top-color: var(--green); border-radius: 50%; margin: 0 auto 12px; animation: spin 0.8s linear infinite; }
+  .daily-order-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg); margin-bottom: 6px; gap: 10px; }
+  .daily-order-item.missing { background: #FFF5F5; }
+  .daily-order-info { flex: 1; min-width: 0; }
+  .daily-order-code { font-size: 13px; font-weight: 600; color: var(--text); }
+  .daily-order-name { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .daily-order-badge { font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+  .daily-order-badge.ok { background: var(--green-light); color: var(--green); }
+  .daily-order-badge.bad { background: #FFE5E5; color: var(--red); }
   @keyframes spin { to { transform: rotate(360deg); } }
   .secret-btn { width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; opacity: 0; margin-left: 4px; }
   .secret-menu { position: absolute; top: 62px; right: 16px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.15); overflow: hidden; display: none; z-index: 100; min-width: 190px; }
@@ -123,6 +130,14 @@
       <div class="autodel-sub">ลดพื้นที่ storage ที่ใช้ไป</div>
     </div>
     <button class="autodel-btn" onclick="openCleanupModal()">🗑 ลบรูปเก่า</button>
+  </div>
+
+  <div class="autodel-card" style="background:var(--green-light); border-color:var(--green-border);">
+    <div class="autodel-info">
+      <div class="autodel-title" style="color:var(--green);">เช็ครูปรายวัน</div>
+      <div class="autodel-sub">ดูออเดอร์ตามวันที่ + เช็คว่าอัพรูปครบไหม</div>
+    </div>
+    <button class="autodel-btn" style="background:var(--green);" onclick="openDailyCheckModal()">📅 เช็ครายวัน</button>
   </div>
 
   <p class="section-title">ค้นหาลูกค้า</p>
@@ -181,6 +196,42 @@
       <div class="modal-actions">
         <button class="modal-btn cancel" style="flex:1;" onclick="closeCleanupModal()">ปิด</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dailyCheckModal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-title">📅 เช็ครูปรายวัน</div>
+
+    <div style="margin-bottom:14px;">
+      <input type="date" id="dailyDateInput" class="search-input" style="width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; font-family:'Sarabun',sans-serif; font-size:14px;" onchange="runDailyCheck()"/>
+    </div>
+
+    <div id="dailyLoading" style="display:none;">
+      <div class="modal-spinner"></div>
+      <div class="modal-body" style="text-align:center;">กำลังตรวจสอบรูป... อาจใช้เวลาสักครู่</div>
+    </div>
+
+    <div id="dailyEmpty" style="display:none;">
+      <div class="modal-body" style="text-align:center;">เลือกวันที่เพื่อดูออเดอร์ของวันนั้นค่ะ</div>
+    </div>
+
+    <div id="dailyNoOrders" style="display:none;">
+      <div class="modal-body" style="text-align:center;">ไม่พบออเดอร์ในวันที่เลือกค่ะ</div>
+    </div>
+
+    <div id="dailyResult" style="display:none;">
+      <div class="modal-stat">
+        <div class="modal-stat-row"><span>ออเดอร์ทั้งหมด</span><span id="dailyTotalCount">0</span></div>
+        <div class="modal-stat-row"><span style="color:var(--green);">✅ อัพรูปแล้ว</span><span id="dailyDoneCount" style="color:var(--green);">0</span></div>
+        <div class="modal-stat-row"><span style="color:var(--red);">⚠️ ยังไม่มีรูป</span><span id="dailyMissingCount" style="color:var(--red);">0</span></div>
+      </div>
+      <div id="dailyOrderList" style="max-height:340px; overflow-y:auto;"></div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="modal-btn cancel" style="flex:1;" onclick="closeDailyCheckModal()">ปิด</button>
     </div>
   </div>
 </div>
@@ -301,6 +352,101 @@ async function getPhotosWithMeta(orderCode) {
       created_at: new Date(f.created_at)
     }));
   } catch { return []; }
+}
+
+function parseThaiDate(str) {
+  // รองรับ "DD/MM/YY" (พ.ศ. 2 หลัก) และ "DD/MM/YYYY" (ค.ศ. 4 หลัก)
+  // คอลัมน์ "รอบจัดส่ง" ใน Sheet มีทั้งสองแบบปนกัน
+  if (!str) return null;
+  const m = str.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (!m) return null;
+  let [, d, mo, y] = m;
+  d = parseInt(d, 10); mo = parseInt(mo, 10); y = parseInt(y, 10);
+  if (y < 100) {
+    // ปี 2 หลัก = พ.ศ. (เช่น 69 -> 2569 -> ค.ศ. 2026)
+    y = 2500 + y - 543;
+  } else if (y > 2400) {
+    // ปี 4 หลัก แต่เป็น พ.ศ. (ไม่ค่อยเจอ แต่กันไว้)
+    y = y - 543;
+  }
+  const dt = new Date(y, mo - 1, d);
+  if (isNaN(dt.getTime())) return null;
+  return dt;
+}
+
+function isSameDate(d1, d2) {
+  return d1 && d2 && d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate();
+}
+
+function openDailyCheckModal() {
+  document.getElementById("dailyCheckModal").classList.add("show");
+  document.getElementById("dailyDateInput").value = "";
+  document.getElementById("dailyLoading").style.display = "none";
+  document.getElementById("dailyResult").style.display = "none";
+  document.getElementById("dailyNoOrders").style.display = "none";
+  document.getElementById("dailyEmpty").style.display = "block";
+}
+
+function closeDailyCheckModal() {
+  document.getElementById("dailyCheckModal").classList.remove("show");
+}
+
+async function runDailyCheck() {
+  const val = document.getElementById("dailyDateInput").value; // YYYY-MM-DD จาก <input type="date">
+  if (!val) return;
+  const [y, mo, d] = val.split("-").map(Number);
+  const targetDate = new Date(y, mo - 1, d);
+
+  document.getElementById("dailyEmpty").style.display = "none";
+  document.getElementById("dailyNoOrders").style.display = "none";
+  document.getElementById("dailyResult").style.display = "none";
+  document.getElementById("dailyLoading").style.display = "block";
+
+  // กรองออเดอร์ใน DB ตามวันที่ตรงกับ targetDate
+  const matched = DB.filter(r => {
+    const rd = parseThaiDate(r.date);
+    return isSameDate(rd, targetDate);
+  });
+
+  document.getElementById("dailyLoading").style.display = "none";
+
+  if (matched.length === 0) {
+    document.getElementById("dailyNoOrders").style.display = "block";
+    return;
+  }
+
+  // เช็คจำนวนรูปของแต่ละออเดอร์จาก Storage (orderCode คือ path prefix)
+  const results = [];
+  for (const r of matched) {
+    const photos = r.orderCode ? await getPhotosWithMeta(r.orderCode) : [];
+    results.push({ row: r, photoCount: photos.length });
+  }
+
+  const doneCount = results.filter(x => x.photoCount > 0).length;
+  const missingCount = results.length - doneCount;
+
+  document.getElementById("dailyTotalCount").textContent = results.length + " ออเดอร์";
+  document.getElementById("dailyDoneCount").textContent = doneCount + " ออเดอร์";
+  document.getElementById("dailyMissingCount").textContent = missingCount + " ออเดอร์";
+
+  // เรียงให้ "ยังไม่มีรูป" ขึ้นก่อน จะได้เห็นง่าย
+  results.sort((a,b) => (a.photoCount>0?1:0) - (b.photoCount>0?1:0));
+
+  const listEl = document.getElementById("dailyOrderList");
+  listEl.innerHTML = results.map(x => {
+    const r = x.row;
+    const ok = x.photoCount > 0;
+    const code = r.orderCode || "(ไม่มีรหัส)";
+    return '<div class="daily-order-item '+(ok?'':'missing')+'">' +
+      '<div class="daily-order-info">' +
+        '<div class="daily-order-code">'+code+'</div>' +
+        '<div class="daily-order-name">'+(r.name||'-')+'</div>' +
+      '</div>' +
+      '<span class="daily-order-badge '+(ok?'ok':'bad')+'">'+(ok ? '✅ '+x.photoCount+' รูป' : '⚠️ ยังไม่มีรูป')+'</span>' +
+    '</div>';
+  }).join("");
+
+  document.getElementById("dailyResult").style.display = "block";
 }
 
 
