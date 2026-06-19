@@ -175,10 +175,13 @@ async function getPhotos(orderCode) {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const ts = Date.now();
-    return (data||[]).filter(f => f.name).map(f =>
-      SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+orderCode+"/"+f.name+"?t="+ts
-    );
+    return (data||[]).filter(f => f.name).map(f => {
+      // ใช้ updated_at ของไฟล์เป็น cache key แทน timestamp ปัจจุบัน
+      // -> URL จะคงที่ตราบใดที่ไฟล์ไม่เปลี่ยน (ใช้ CDN cache ได้เต็มที่ ลด egress)
+      // -> ถ้าไฟล์ถูกอัพโหลดทับ (x-upsert) updated_at จะเปลี่ยน ทำให้รูปใหม่โหลดมาแสดงถูกต้อง
+      const v = f.updated_at ? new Date(f.updated_at).getTime() : (f.id || "");
+      return SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+orderCode+"/"+f.name+"?v="+v;
+    });
   } catch { return []; }
 }
 
