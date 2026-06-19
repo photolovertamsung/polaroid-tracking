@@ -92,6 +92,11 @@
   .daily-order-badge { font-size: 12px; font-weight: 600; padding: 4px 9px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
   .daily-order-badge.ok { background: var(--green-light); color: var(--green); }
   .daily-order-badge.bad { background: #FFE5E5; color: var(--red); }
+  .daily-order-item-wrap { margin-bottom: 6px; border-radius: var(--radius-sm); overflow: hidden; }
+  .daily-order-item-wrap .daily-order-item { margin-bottom: 0; }
+  .daily-order-item-wrap summary::-webkit-details-marker { display: none; }
+  .daily-thumb-box { padding: 8px 12px 10px; background: var(--bg); display: flex; justify-content: center; }
+  .daily-thumb-img { max-width: 140px; max-height: 140px; border-radius: var(--radius-sm); border: 1px solid var(--border); object-fit: cover; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .secret-btn { width: 32px; height: 32px; background: transparent; border: none; cursor: pointer; opacity: 0; margin-left: 4px; }
   .secret-menu { position: absolute; top: 62px; right: 16px; background: var(--surface); border-radius: var(--radius); box-shadow: 0 4px 24px rgba(0,0,0,0.15); overflow: hidden; display: none; z-index: 100; min-width: 190px; }
@@ -428,7 +433,7 @@ async function runDailyCheck() {
   const results = [];
   for (const r of matched) {
     const photos = r.orderCode ? await getPhotosWithMeta(r.orderCode) : [];
-    results.push({ row: r, photoCount: photos.length });
+    results.push({ row: r, photoCount: photos.length, firstPhotoPath: photos[0] ? photos[0].path : null });
   }
 
   const doneCount = results.filter(x => x.photoCount > 0).length;
@@ -446,13 +451,29 @@ async function runDailyCheck() {
     const r = x.row;
     const ok = x.photoCount > 0;
     const code = r.orderCode || "(ไม่มีรหัส)";
-    return '<div class="daily-order-item '+(ok?'':'missing')+'">' +
-      '<div class="daily-order-info">' +
-        '<div class="daily-order-code">'+code+'</div>' +
-        '<div class="daily-order-name">'+(r.name||'-')+'</div>' +
-      '</div>' +
-      '<span class="daily-order-badge '+(ok?'ok':'bad')+'">'+(ok ? '✅ '+x.photoCount+' รูป' : '⚠️ ยังไม่มีรูป')+'</span>' +
-    '</div>';
+    const thumbUrl = x.firstPhotoPath ? (SUPABASE_URL+"/storage/v1/object/public/"+BUCKET+"/"+x.firstPhotoPath) : "";
+    const badge = '<span class="daily-order-badge '+(ok?'ok':'bad')+'">'+(ok ? '✅ '+x.photoCount+' รูป' : '⚠️ ยังไม่มีรูป')+'</span>';
+
+    if (!ok) {
+      // ไม่มีรูป ไม่ต้องให้กดขยาย
+      return '<div class="daily-order-item missing">' +
+        '<div class="daily-order-info">' +
+          '<div class="daily-order-code">'+code+'</div>' +
+          '<div class="daily-order-name">'+(r.name||'-')+'</div>' +
+        '</div>' + badge +
+      '</div>';
+    }
+
+    // มีรูป -> ทำเป็น <details> กดขยายดู thumbnail ได้ (รูปจะโหลดเฉพาะตอนกดเปิดเท่านั้น)
+    return '<details class="daily-order-item-wrap">' +
+      '<summary class="daily-order-item" style="cursor:pointer; list-style:none;">' +
+        '<div class="daily-order-info">' +
+          '<div class="daily-order-code">'+code+'</div>' +
+          '<div class="daily-order-name">'+(r.name||'-')+'</div>' +
+        '</div>' + badge +
+      '</summary>' +
+      '<div class="daily-thumb-box"><img src="'+thumbUrl+'" loading="lazy" class="daily-thumb-img" alt="ตัวอย่างรูป"/></div>' +
+    '</details>';
   }).join("");
 
   document.getElementById("dailyResult").style.display = "block";
