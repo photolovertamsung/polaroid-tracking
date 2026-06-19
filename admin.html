@@ -355,20 +355,29 @@ async function getPhotosWithMeta(orderCode) {
 }
 
 function parseThaiDate(str) {
-  // รองรับ "DD/MM/YY" (พ.ศ. 2 หลัก) และ "DD/MM/YYYY" (ค.ศ. 4 หลัก)
-  // คอลัมน์ "รอบจัดส่ง" ใน Sheet มีทั้งสองแบบปนกัน
+  // คอลัมน์ "รอบจัดส่ง" ใน Sheet มีฟอร์แมตปนกันหลายแบบ เช่น
+  // "04/06/69" (พ.ศ. 2 หลัก), "04/06/2026" (ค.ศ. 4 หลัก), "19/06/26" (ค.ศ. 2 หลัก)
+  // เลข 2 หลักกำกวม (26 อาจคือ ค.ศ.2026 หรือ พ.ศ.2526) เลยต้องเดาแบบที่สมเหตุสมผลที่สุด
+  // โดยเทียบกับปีปัจจุบัน เลือกตัวที่ใกล้ปีปัจจุบันที่สุด (ออเดอร์ร้านไม่ควรห่างปีนี้เกิน 1-2 ปี)
   if (!str) return null;
   const m = str.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
   if (!m) return null;
-  let [, d, mo, y] = m;
-  d = parseInt(d, 10); mo = parseInt(mo, 10); y = parseInt(y, 10);
-  if (y < 100) {
-    // ปี 2 หลัก = พ.ศ. (เช่น 69 -> 2569 -> ค.ศ. 2026)
-    y = 2500 + y - 543;
-  } else if (y > 2400) {
-    // ปี 4 หลัก แต่เป็น พ.ศ. (ไม่ค่อยเจอ แต่กันไว้)
-    y = y - 543;
+  let [, d, mo, yRaw] = m;
+  d = parseInt(d, 10); mo = parseInt(mo, 10);
+  const yNum = parseInt(yRaw, 10);
+  const nowYear = new Date().getFullYear();
+
+  let y;
+  if (yRaw.length === 4) {
+    // ปี 4 หลัก: ถ้ามากกว่า 2400 ถือเป็น พ.ศ. แปลงเป็น ค.ศ., ไม่งั้นถือเป็น ค.ศ. อยู่แล้ว
+    y = yNum > 2400 ? yNum - 543 : yNum;
+  } else {
+    // ปี 2 หลัก: ลองแปลงได้ 2 ทาง แล้วเลือกทางที่ปีใกล้ปีปัจจุบันที่สุด
+    const asCE = 2000 + yNum;           // เช่น 26 -> ค.ศ. 2026
+    const asBE = 2500 + yNum - 543;     // เช่น 69 -> พ.ศ. 2569 -> ค.ศ. 2026
+    y = Math.abs(asCE - nowYear) <= Math.abs(asBE - nowYear) ? asCE : asBE;
   }
+
   const dt = new Date(y, mo - 1, d);
   if (isNaN(dt.getTime())) return null;
   return dt;
