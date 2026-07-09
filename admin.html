@@ -505,8 +505,13 @@ async function doSearch() {
   const q = document.getElementById("searchInput").value.trim();
   const container = document.getElementById("results");
   if (!q) { container.innerHTML = ""; return; }
-  const fullCode = "PT-" + q;
-  const found = DB.filter(r => r.orderCode.toLowerCase().includes(fullCode.toLowerCase()));
+  const qNum = (q.replace(/\D/g, "") || "").replace(/^0+/, "") || "0";
+  const found = DB.filter(r => {
+    const m = r.orderCode.match(/(\d+)/);
+    if (!m) return false;
+    const codeNum = m[1].replace(/^0+/, "") || "0";
+    return codeNum === qNum;
+  });
   if (!found.length) { container.innerHTML = '<div class="empty-state">🔍<br>ไม่พบลูกค้า</div>'; return; }
   container.innerHTML = '<p class="result-count">กำลังโหลด...</p>';
   const cards = await Promise.all(found.map((r,i) => buildCard(r,i)));
