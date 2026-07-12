@@ -232,7 +232,7 @@
     <div class="step-desc" id="rDesc"></div>
     <div class="step-warn" id="rWarn" style="display:none;">🟠 หลังสถานะนี้ไม่สามารถแก้ไขไฟล์ได้แล้วนะคะ</div>
     <div class="queue-note" id="rQueueNote" style="display:none;">
-      <span style="flex-shrink:0;">📌</span>
+      <span style="flex-shrink:0;" id="rQueueNoteIcon">📌</span>
       <span id="rQueueNoteText"></span>
     </div>
     <div class="delay-box" id="rDelay" style="display:none;">
@@ -432,12 +432,19 @@ async function showResult(o) {
   document.getElementById("rWarn").style.display = s===2?"block":"none";
 
   const queueNote = document.getElementById("rQueueNote");
+  const queueIcon = document.getElementById("rQueueNoteIcon");
   if (s <= 3) {
     queueNote.style.display = "flex";
+    queueIcon.textContent = "📌";
     document.getElementById("rQueueNoteText").innerHTML =
       "<strong>สถานะจะอัพเดตเมื่อถึงคิวผลิตค่ะ</strong>" +
       (o.date ? " (รอบจัดส่งของคุณ: "+o.date+")" : "") +
       "<br>หากถึงวันนัดส่งแล้วสถานะยังไม่ขยับ ทักสอบถามได้เลยนะคะ แต่ระหว่างที่ยังไม่ถึงรอบ สถานะจะค้างแบบนี้เป็นปกติค่ะ 🙏";
+  } else if (s === 5) {
+    queueNote.style.display = "flex";
+    queueIcon.textContent = "📦";
+    document.getElementById("rQueueNoteText").innerHTML =
+      "เลขพัสดุจะอัพเดตภายใน 4 ทุ่มของวันนี้ค่ะ";
   } else {
     queueNote.style.display = "none";
   }
