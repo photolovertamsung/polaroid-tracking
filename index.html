@@ -437,9 +437,9 @@ async function showResult(o) {
     queueNote.style.display = "flex";
     queueIcon.textContent = "📌";
     document.getElementById("rQueueNoteText").innerHTML =
-      "<strong>สถานะจะอัพเดตเมื่อถึงคิวผลิตค่ะ</strong>" +
+      "สถานะจะอัปเดตเมื่อออเดอร์ถึงคิวผลิตนะคะ" +
       (o.date ? " (รอบจัดส่งของคุณ: "+o.date+")" : "") +
-      "<br>หากถึงวันนัดส่งแล้วสถานะยังไม่ขยับ ทักสอบถามได้เลยนะคะ แต่ระหว่างที่ยังไม่ถึงรอบ สถานะจะค้างแบบนี้เป็นปกติค่ะ 🙏";
+      "<br>ถ้ายังไม่ถึงรอบจัดส่ง สถานะจะค้างแบบนี้เป็นปกติเลยน้า หากถึงวันนัดจัดส่งแล้วสถานะยังไม่อัปเดต ทักมาสอบถามได้เลยนะคะ 🙏🏻";
   } else if (s === 4) {
     queueNote.style.display = "flex";
     queueIcon.textContent = "🖨️";
