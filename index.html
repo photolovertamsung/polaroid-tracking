@@ -272,7 +272,7 @@ const photoCache = {};
 const STEPS = [
   { emoji:"💸", label:"โอนเงินแล้ว", desc:"ลูกค้าแจ้งชำระเรียบร้อยค่ะ" },
   { emoji:"📂", label:"โหลดไฟล์แล้ว", desc:"ไฟล์ถูกโหลดเข้าระบบเรียบร้อยค่ะ", warn:true },
-  { emoji:"⏳", label:"รอคิวผลิต", time:"3-4 วัน", desc:"🟡 คิวของคุณกำลังเข้าสู่ขั้นตอนผลิตเร็ว ๆ นี้" },
+  { emoji:"⏳", label:"รอคิวผลิต", desc:"🟡 คิวของคุณกำลังเข้าสู่ขั้นตอนผลิตเร็ว ๆ นี้" },
   { emoji:"🖨️", label:"กำลังผลิต", desc:"กำลังพิมพ์ / ตัด / จัดเซ็ตสินค้าค่ะ" },
   { emoji:"📦", label:"แพ็กของแล้ว", desc:"กำลังเตรียมจัดส่งให้ค่ะ" },
   { emoji:"🚚", label:"จัดส่งแล้ว", desc:"ส่งพัสดุเรียบร้อย ติดตามเลขแทรกกิ้งได้เลย ✨" },
@@ -440,6 +440,11 @@ async function showResult(o) {
       "<strong>สถานะจะอัพเดตเมื่อถึงคิวผลิตค่ะ</strong>" +
       (o.date ? " (รอบจัดส่งของคุณ: "+o.date+")" : "") +
       "<br>หากถึงวันนัดส่งแล้วสถานะยังไม่ขยับ ทักสอบถามได้เลยนะคะ แต่ระหว่างที่ยังไม่ถึงรอบ สถานะจะค้างแบบนี้เป็นปกติค่ะ 🙏";
+  } else if (s === 4) {
+    queueNote.style.display = "flex";
+    queueIcon.textContent = "🖨️";
+    document.getElementById("rQueueNoteText").innerHTML =
+      "งานของคุณลูกค้ากำลังอยู่ในขั้นตอนผลิตน้า ใกล้ถึงคิวผลิตแล้วคั้บ !";
   } else if (s === 5) {
     queueNote.style.display = "flex";
     queueIcon.textContent = "📦";
