@@ -402,7 +402,8 @@ async function showResult(o) {
   // order details
   let detailHtml = "";
   if (o.items) {
-    detailHtml += '<div class="detail-row"><span class="detail-icon">🛍️</span><div><div class="detail-label">รายการสินค้า</div><div class="detail-value">'+o.items+'</div></div></div>';
+    const itemsHtml = o.items.replace(/\n/g, '<br>');
+    detailHtml += '<div class="detail-row"><span class="detail-icon">🛍️</span><div><div class="detail-label">รายการสินค้า</div><div class="detail-value">'+itemsHtml+'</div></div></div>';
   }
   if (o.address) {
     detailHtml += '<div class="detail-row"><span class="detail-icon">🏠</span><div><div class="detail-label">ที่อยู่จัดส่ง</div><div class="detail-value">'+o.address+'</div></div></div>';
