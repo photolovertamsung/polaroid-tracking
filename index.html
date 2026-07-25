@@ -97,7 +97,9 @@
   .queue-note { background: rgba(0,122,255,0.08); border: 0.5px solid rgba(0,122,255,0.25); border-radius: var(--rsm); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: #0056B3; display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
   .delay-box { background: rgba(255,59,48,0.07); border: 0.5px solid rgba(255,59,48,0.25); border-radius: var(--rsm); padding: 10px 12px; margin-top: 8px; font-size: 13px; color: var(--red); display: flex; gap: 8px; align-items: flex-start; line-height: 1.6; }
   .tracking-box { background: var(--fill); border-radius: var(--rsm); padding: 12px 14px; margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
-  .tracking-num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--label); flex: 1; word-break: break-all; }
+  .tracking-num { font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 700; color: var(--label); flex: 1; word-break: break-all; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .tracking-num.linked { color: #1D9E75; }
+  .tracking-num.linked:active { opacity: 0.7; }
   .copy-btn { padding: 5px 12px; border: none; border-radius: 6px; background: var(--label); color: white; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
 
   .product-img { width: 100%; border-radius: 10px; margin-top: 10px; max-height: 240px; object-fit: cover; display: block; cursor: zoom-in; color: transparent; }
@@ -215,6 +217,16 @@
   <div class="result-card" id="result">
     <div class="card-name" id="rName"></div>
     <div class="card-sub" id="rSub"></div>
+
+    <!-- tracking number (moved to top) -->
+    <div class="tracking-box" id="rTracking" style="display:none;margin-top:12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:12px;color:var(--label3);flex-shrink:0;" id="rCourierLabel">เลขพัสดุ</span>
+        <a class="tracking-num" id="rTrackNum" href="#" target="_blank" rel="noopener"></a>
+        <button class="copy-btn" onclick="copyTrack()">คัดลอก</button>
+      </div>
+    </div>
+
     <hr class="sep">
 
     <!-- order details -->
@@ -238,16 +250,6 @@
     <div class="delay-box" id="rDelay" style="display:none;">
       <span style="flex-shrink:0;">🔴</span>
       <span id="rDelayText"></span>
-    </div>
-    <div class="tracking-box" id="rTracking" style="display:none;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-        <span style="font-size:12px;color:var(--label3);flex-shrink:0;" id="rCourierLabel">เลขพัสดุ</span>
-        <span class="tracking-num" id="rTrackNum"></span>
-        <button class="copy-btn" onclick="copyTrack()">คัดลอก</button>
-      </div>
-      <a id="rTrackLink" href="#" target="_blank" style="display:none;align-items:center;justify-content:center;gap:6px;background:var(--label);color:white;padding:10px;border-radius:var(--rsm);font-size:14px;font-weight:600;text-decoration:none;width:100%;">
-        🔍 ติดตามพัสดุ
-      </a>
     </div>
     <div id="rPhotos"></div>
   </div>
@@ -462,14 +464,25 @@ async function showResult(o) {
   const trackBox = document.getElementById("rTracking");
   if (s===6 && o.tracking) {
     trackBox.style.display="block";
-    document.getElementById("rTrackNum").textContent=o.tracking;
     document.getElementById("rCourierLabel").textContent = (o.courier ? o.courier+" · " : "") + "เลขพัสดุ";
-    const linkEl = document.getElementById("rTrackLink");
-    if (o.trackingLink) {
-      linkEl.href = o.trackingLink;
-      linkEl.style.display = "flex";
+    const numEl = document.getElementById("rTrackNum");
+    numEl.textContent = o.tracking;
+    const courierUpper = (o.courier || "").toUpperCase();
+    let autoLink = "";
+    if (courierUpper === "SPX") {
+      autoLink = "https://spx.co.th/track?" + encodeURIComponent(o.tracking);
+    }
+    const finalLink = autoLink || o.trackingLink;
+    if (finalLink) {
+      numEl.href = finalLink;
+      numEl.classList.add("linked");
+      numEl.style.pointerEvents = "auto";
+      numEl.style.cursor = "pointer";
     } else {
-      linkEl.style.display = "none";
+      numEl.removeAttribute("href");
+      numEl.classList.remove("linked");
+      numEl.style.pointerEvents = "none";
+      numEl.style.cursor = "default";
     }
   } else {
     trackBox.style.display="none";
